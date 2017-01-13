@@ -1,3 +1,5 @@
+var F = null;
+
 window.onload = function() {
   
   // init DnD
@@ -28,6 +30,6 @@ function onDrop(e) {
     return;
   }
 
-  console.log(files);
+  F = new HDF5.File(files[0]);
 
 };
