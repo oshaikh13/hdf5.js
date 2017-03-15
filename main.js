@@ -30,6 +30,4 @@ function onDrop(e) {
     return;
   }
 
-  F = new HDF5.File(files[0]);
-
 };
