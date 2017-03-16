@@ -1,4 +1,6 @@
 
+var VALID_FORMAT_SIGNATURE = [137, 72, 68, 70, 13, 10, 26, 10];
+
 // Hashmaps with fields that point to its size in bytes
 var SUPERBLOCK_V0 = {
   'format_signature': 8,
