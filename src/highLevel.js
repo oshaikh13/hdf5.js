@@ -7,6 +7,7 @@ HDF5.File = function (file) {
   fileObj._file = file;
   fileObj._reader = new FileReader();
   fileObj.SuperBlock = null;
+  fileObj._arrayBuffer = null;
 
   /**
    * The onError callback.
@@ -27,10 +28,10 @@ HDF5.File = function (file) {
       // we read an array buffer
       var loadedFile = e.target.result;
 
-      var byteBuffer = new Uint8Array(loadedFile);
+      fileObj._arrayBuffer = new Uint8Array(loadedFile);
 
       // and look at its superblock
-      this.SuperBlock = SuperBlock(byteBuffer, 0);
+      this.SuperBlock = SuperBlock(fileObj._arrayBuffer, 0);
 
     }
 
