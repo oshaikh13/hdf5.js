@@ -5,8 +5,8 @@ function unpackStruct (structure, buffer, loc) {
   for (var key in structure) {
     var numBytes = structure[key];
     structValues[key] = [];
-    int endByte = loc + numBytes;
-    for (loc; i < endByte; loc++) {
+    var endByte = loc + numBytes;
+    for (loc; loc < endByte; loc++) {
       structValues[key].push(buffer[loc]);
     }
   }
