@@ -20,8 +20,25 @@ var SUPERBLOCK_V0 = {
 
   'file_consistency_flags': 4,
 
-  'base_address': 4,                  // assume 8 byte addressing
-  'free_space_address': 4,            // assume 8 byte addressing
-  'end_of_file_address': 4,           // assume 8 byte addressing
-  'driver_information_address': 4,    // assume 8 byte addressing
+  'base_address': 8,                  // assume 8 byte addressing
+  'free_space_address': 8,            // assume 8 byte addressing
+  'end_of_file_address': 8,           // assume 8 byte addressing
+  'driver_information_address': 8,    // assume 8 byte addressing
 }
+
+var SYMBOL_TABLE_NODE = {
+  'signature': 4,
+  'version': 1,
+  'reserved_0': 1,
+  'symbols': 2,
+}
+
+var SYMBOL_TABLE_ENTRY = {
+  'link_name_offset': 8,
+  'object_header_address': 8,
+  'cache_type': 4,
+  'reserved': 4,
+  'scratch': 16,
+}
+
+var SUPERBLOCK_V0_SIZE = structSize(SUPERBLOCK_V0);

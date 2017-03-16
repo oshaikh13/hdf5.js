@@ -32,6 +32,8 @@ HDF5.File = function (file) {
 
       // and look at its superblock
       this.SuperBlock = SuperBlock(fileObj._arrayBuffer, 0);
+      var offset = this.SuperBlock.offsetToDataObjects()[0];
+      // var dataObjects = DataObjects(fileObj._arrayBuffer, offset);
 
     }
 
