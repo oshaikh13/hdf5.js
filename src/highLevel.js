@@ -30,7 +30,7 @@ HDF5.File = function (file) {
       var byteBuffer = new Uint8Array(loadedFile);
 
       // and look at its superblock
-      this.SuperBlock = SuperBlock(byteBuffer, 0, 512);
+      this.SuperBlock = SuperBlock(byteBuffer, 0);
 
     }
 
