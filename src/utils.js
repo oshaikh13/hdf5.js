@@ -1,5 +1,6 @@
+const utils = {};
 
-function structSize (struct) {
+utils.structSize = (struct) => {
   var size = 0;
   for (var key in struct) {
     size += struct[key];
@@ -7,7 +8,7 @@ function structSize (struct) {
   return size;
 }
 
-function unpackStruct (structure, buffer, loc) {
+utils.unpackStruct = (structure, buffer, loc) => {
 
   var structValues = {};
 
