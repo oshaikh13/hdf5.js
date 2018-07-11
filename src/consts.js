@@ -1,8 +1,9 @@
+const consts = {};
 
-var VALID_FORMAT_SIGNATURE = [137, 72, 68, 70, 13, 10, 26, 10];
+consts.VALID_FORMAT_SIGNATURE = [137, 72, 68, 70, 13, 10, 26, 10];
 
 // Hashmaps with fields that point to its size in bytes
-var SUPERBLOCK_V0 = {
+consts.SUPERBLOCK_V0 = {
   'format_signature': 8,
 
   'superblock_version': 1,
@@ -26,14 +27,14 @@ var SUPERBLOCK_V0 = {
   'driver_information_address': 8,    // assume 8 byte addressing
 }
 
-var SYMBOL_TABLE_NODE = {
+consts.SYMBOL_TABLE_NODE = {
   'signature': 4,
   'version': 1,
   'reserved_0': 1,
   'symbols': 2,
 }
 
-var SYMBOL_TABLE_ENTRY = {
+consts.SYMBOL_TABLE_ENTRY = {
   'link_name_offset': 8,
   'object_header_address': 8,
   'cache_type': 4,
@@ -41,4 +42,5 @@ var SYMBOL_TABLE_ENTRY = {
   'scratch': 16,
 }
 
-var SUPERBLOCK_V0_SIZE = structSize(SUPERBLOCK_V0);
+consts.SUPERBLOCK_V0_SIZE = utils.structSize(consts.SUPERBLOCK_V0);
+consts.SYMBOL_TABLE_ENTRY_SIZE = utils.structSize(consts.SYMBOL_TABLE_ENTRY);
