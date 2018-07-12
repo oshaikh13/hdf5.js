@@ -44,3 +44,12 @@ consts.SYMBOL_TABLE_ENTRY = {
 
 consts.SUPERBLOCK_V0_SIZE = utils.structSize(consts.SUPERBLOCK_V0);
 consts.SYMBOL_TABLE_ENTRY_SIZE = utils.structSize(consts.SYMBOL_TABLE_ENTRY);
+
+consts.OBJECT_HEADER_V1 = {
+  'version': 1,
+  'reserved': 1,
+  'total_header_messages': 2,
+  'object_reference_count': 4,
+  'object_header_size': 4,
+  'padding': 4,
+}

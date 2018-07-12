@@ -25,8 +25,7 @@ HDF5.File = function (file) {
                        consts.SYMBOL_TABLE_ENTRY_SIZE, 
                        (err) => {
     if (err) throw new Error("crap");
-    console.log(fileObj);
-    const dataObjects = DataObjects(fileObj, offset);
+    const dataObjects = DataObjects(fileObj, fileObj.SuperBlock._rootSymbolTable.groupOffset[0]);
   }); 
 
   return fileObj;
