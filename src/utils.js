@@ -24,3 +24,16 @@ utils.unpackStruct = (structure, buffer, loc) => {
   return structValues;
 
 }
+
+utils.fileReader = new FileReader();
+
+utils.fileChunkReader = (file, intervals, callback) => {
+
+  utils.fileReader.onloadend = (e) => {
+    callback(e);
+  }
+
+  const selectedBlob = file.slice(intervals[0], intervals[1] + 1);
+  utils.fileReader.readAsArrayBuffer(selectedBlob);
+  
+}

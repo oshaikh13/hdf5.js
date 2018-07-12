@@ -6,7 +6,6 @@ lowLevel.SuperBlock = (bytes, start) => {
   var superBlockObject = {};
 
   superBlockObject.contents = utils.unpackStruct(consts.SUPERBLOCK_V0, bytes, start);
-  debugger;
   for (var i = 0; i < consts.VALID_FORMAT_SIGNATURE.length; i++) {
     if (consts.VALID_FORMAT_SIGNATURE[i] != superBlockObject.contents['format_signature'][i])
       throw new Error("Invalid HDF5 file provided!");
@@ -42,7 +41,7 @@ lowLevel.SymbolTable  = (bytes, start, rootGroup) => {
       'symbols': 1
     }
   } else {
-    node = utils.unpackStruct(consts.SYMBOL_TABLE_NODE, bytes, start)
+    node = utils.unpackStruct(consts.SYMBOL_TABLE_NODE, bytes, start);
   }
 
   var entries = [];

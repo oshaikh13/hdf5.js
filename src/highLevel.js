@@ -8,22 +8,17 @@ HDF5.File = function (file) {
   fileObj.SuperBlock = null;
 
   const readSuperBlock = (file, size, callback) => {
-    const superBlockReader = new FileReader();
-    superBlockReader.onloadend = (e) => {
+    utils.fileChunkReader(file, [0, size], (e) => {
       if (e.target.readyState == FileReader.DONE) {
 
-        // we read an array buffer
         var loadedFile = e.target.result;
         const superBlockBuffer = new Uint8Array(loadedFile);
-  
-        // and look at its superblock
+
+        // look at its superblock
         fileObj.SuperBlock = lowLevel.SuperBlock(superBlockBuffer, 0);
         callback(false);  
       }
-    }
-
-    const superBlockBlob = file.slice(0, size + 1);
-    superBlockReader.readAsArrayBuffer(superBlockBlob);
+    });
   }
 
   readSuperBlock(file, consts.SUPERBLOCK_V0_SIZE + 
@@ -31,7 +26,7 @@ HDF5.File = function (file) {
                        (err) => {
     if (err) throw new Error("crap");
     console.log(fileObj);
-    // var dataObjects = DataObjects(fileObj._arrayBuffer, offset);
+    const dataObjects = DataObjects(fileObj, offset);
   }); 
 
   return fileObj;
