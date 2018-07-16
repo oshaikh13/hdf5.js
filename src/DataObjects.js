@@ -5,14 +5,49 @@ function DataObjects (fileObj, offset) {
   // Implement dataobj version x, y, z, etc.
   const readObjectHeader = (version) => {
     utils.fileChunkReader(fileObj._file, 
-                          [offset, offset + utils.structSize(consts.OBJECT_HEADER_V1)],
+                          [offset, offset + consts.OBJECT_HEADER_V1_SIZE],
     (e) => {
     
-      var loadedFile = e.target.result;
-      const dataObjHeaderBytes = new Uint8Array(loadedFile);  
+      const dataObjHeaderBytes = new Uint8Array(e.target.result);  
 
       // the start loc is 0 because we're reading from the start of a slice
-      dataObj._header = utils.unpackStruct(consts.OBJECT_HEADER_V1, dataObjHeaderBytes, 0);
+      const unpackedHeaderObj = 
+        utils.unpackStruct(consts.OBJECT_HEADER_V1, dataObjHeaderBytes, 0);
+
+      debugger;
+
+      utils.fileChunkReader(fileObj._file, 
+        [offset + consts.OBJECT_HEADER_V1_SIZE + 1, 
+         offset + consts.OBJECT_HEADER_V1_SIZE + unpackedHeaderObj.object_header_size[0]],
+      (e) => {
+        const msgBytes = new Uint8Array(e.target.result);  
+        var offset = 0;
+        var msgs = [];
+        debugger;
+        for (var i = 0; i < unpackedHeaderObj.total_header_messages[0]; i++) {
+          debugger;
+          const currentMsg = utils.unpackStruct(consts.HEADER_MSG_INFO_V1, msgBytes, offset);
+          currentMsg.offset_to_message = offset + 8;
+          debugger;
+        }
+      });
+  
+
+      // dataObj.msgs = unpackedDataObj.msgs;
+      // dataObj.msg_data = unpackedDataObj.msg_data;
+      // dataObj.offset = offset;
+      // dataObj._globl_heaps = {};
+      // dataObj.header = unpackedDataObj.header;
+
+      // // cached attributes
+      // dataObj._filter_pipeline = null;
+      // dataObj._chunk_params_set = false;
+      // dataObj._chunks = null;
+      // dataObj._chunk_dims = null;
+      // dataObj._chunk_address = null;
+
+      // debugger;
+
     });
   }
 
@@ -27,6 +62,10 @@ function DataObjects (fileObj, offset) {
 
     }
   });
+
+  utils.parseV1Objects = function () {
+
+  }
 
   return dataObj;
 }

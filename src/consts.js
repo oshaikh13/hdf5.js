@@ -53,3 +53,12 @@ consts.OBJECT_HEADER_V1 = {
   'object_header_size': 4,
   'padding': 4,
 }
+
+consts.HEADER_MSG_INFO_V1 = {
+  'type': 2,
+  'size': 2,
+  'flags': 1,
+  'reserved': 3,
+}
+
+consts.OBJECT_HEADER_V1_SIZE = utils.structSize(consts.OBJECT_HEADER_V1);
