@@ -20,16 +20,9 @@ function DataObjects (fileObj, offset) {
         [offset + consts.OBJECT_HEADER_V1_SIZE + 1, 
          offset + consts.OBJECT_HEADER_V1_SIZE + unpackedHeaderObj.object_header_size[0]],
       (e) => {
-        const msgBytes = new Uint8Array(e.target.result);  
-        var offset = 0;
-        var msgs = [];
-        debugger;
-        for (var i = 0; i < unpackedHeaderObj.total_header_messages[0]; i++) {
-          debugger;
-          const currentMsg = utils.unpackStruct(consts.HEADER_MSG_INFO_V1, msgBytes, offset);
-          currentMsg.offset_to_message = offset + 8;
-          debugger;
-        }
+        utils.parseV1Objects(new Uint8Array(e.target.result), unpackedHeaderObj, () => {
+
+        });
       });
   
 
@@ -63,7 +56,20 @@ function DataObjects (fileObj, offset) {
     }
   });
 
-  utils.parseV1Objects = function () {
+  utils.parseV1Objects = function (msgBytes, unpackedHeaderObj, callback) {
+    var offset = 0;
+    var msgs = [];
+    var completed = 0;
+
+    for (var i = 0; i < unpackedHeaderObj.total_header_messages[0]; i++) {
+      const currentMsg = utils.unpackStruct(consts.HEADER_MSG_INFO_V1, msgBytes, offset);
+      currentMsg.offset_to_message = offset + 8;
+      if (currentMsg.type[1] === consts.OBJECT_CONTINUATION_MSG_TYPE) {
+        debugger;
+      } else {
+
+      }
+    }
 
   }
 

@@ -62,3 +62,5 @@ consts.HEADER_MSG_INFO_V1 = {
 }
 
 consts.OBJECT_HEADER_V1_SIZE = utils.structSize(consts.OBJECT_HEADER_V1);
+
+consts.OBJECT_CONTINUATION_MSG_TYPE = 0x0010;
