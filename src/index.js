@@ -4,7 +4,6 @@ var F = null;
 
 document.addEventListener("DOMContentLoaded", function(event) { 
   // init dnd
-  debugger;
   document.getElementById("body").addEventListener("dragover", onDragOver, false);
   document.getElementById("body").addEventListener("dragleave", onDragLeave, false);
   document.getElementById("body").addEventListener("drop", onDrop, false);

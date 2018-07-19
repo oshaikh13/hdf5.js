@@ -1,5 +1,7 @@
 const utils = require('./utils.js');
 const consts = require('./consts.js');
+const struct = require('python-struct');
+const Buffer = require('buffer/').Buffer;
 
 var DataObjects = (fileObj, offset) => {
   const dataObj = {};
@@ -17,12 +19,12 @@ var DataObjects = (fileObj, offset) => {
       const unpackedHeaderObj = 
         utils.unpackStruct(consts.OBJECT_HEADER_V1, dataObjHeaderBytes, 0);
 
-      debugger;
 
       utils.fileChunkReader(fileObj._file, 
         [offset + consts.OBJECT_HEADER_V1_SIZE + 1, 
          offset + consts.OBJECT_HEADER_V1_SIZE + unpackedHeaderObj.object_header_size[0]],
       (e) => {
+        
         utils.parseV1Objects(new Uint8Array(e.target.result), unpackedHeaderObj, () => {
 
         });
@@ -68,7 +70,7 @@ var DataObjects = (fileObj, offset) => {
       const currentMsg = utils.unpackStruct(consts.HEADER_MSG_INFO_V1, msgBytes, offset);
       currentMsg.offset_to_message = offset + 8;
       if (currentMsg.type[1] === consts.OBJECT_CONTINUATION_MSG_TYPE) {
-        debugger;
+        var unpacked = struct.unpack('<QQ', Buffer.from(msgBytes.buffer), offset + 8);
       } else {
 
       }
