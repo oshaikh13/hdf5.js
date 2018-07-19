@@ -37,3 +37,5 @@ utils.fileChunkReader = (file, intervals, callback) => {
   utils.fileReader.readAsArrayBuffer(selectedBlob);
   
 }
+
+module.exports = utils;

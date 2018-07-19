@@ -1,4 +1,7 @@
-function DataObjects (fileObj, offset) {
+const utils = require('./utils.js');
+const consts = require('./consts.js');
+
+var DataObjects = (fileObj, offset) => {
   const dataObj = {};
 
   // TODO: arg version is currently unused.
@@ -75,3 +78,5 @@ function DataObjects (fileObj, offset) {
 
   return dataObj;
 }
+
+module.exports = DataObjects;

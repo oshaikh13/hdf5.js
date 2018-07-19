@@ -1,3 +1,5 @@
+const utils = require('./utils.js');
+
 const consts = {};
 
 consts.VALID_FORMAT_SIGNATURE = [137, 72, 68, 70, 13, 10, 26, 10];
@@ -64,3 +66,5 @@ consts.HEADER_MSG_INFO_V1 = {
 consts.OBJECT_HEADER_V1_SIZE = utils.structSize(consts.OBJECT_HEADER_V1);
 
 consts.OBJECT_CONTINUATION_MSG_TYPE = 0x0010;
+
+module.exports = consts;

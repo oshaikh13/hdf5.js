@@ -1,3 +1,6 @@
+const utils = require('./utils.js');
+const consts = require('./consts.js');
+
 // Low level API's for HDF5 reader
                   // UINT   8
 const lowLevel = {};
@@ -58,3 +61,4 @@ lowLevel.SymbolTable  = (bytes, start, rootGroup) => {
 
 }
 
+module.exports = lowLevel;

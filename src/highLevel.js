@@ -1,3 +1,7 @@
+const lowLevel = require('./lowLevel.js');
+const utils = require('./utils.js');
+const consts = require('./consts.js');
+const DataObjects = require('./DataObjects.js');
 
 var HDF5 = {};
 
@@ -30,3 +34,5 @@ HDF5.File = function (file) {
 
   return fileObj;
 }
+
+module.exports = HDF5;
