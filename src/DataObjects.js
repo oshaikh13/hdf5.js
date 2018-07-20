@@ -18,10 +18,10 @@ var DataObjects = (fileObj, offset) => {
       // the start loc is 0 because we're reading from the start of a slice
       const unpackedHeaderObj = 
         utils.unpackStruct(consts.OBJECT_HEADER_V1, dataObjHeaderBytes, 0);
-
+    
 
       utils.fileChunkReader(fileObj._file, 
-        [offset + consts.OBJECT_HEADER_V1_SIZE + 1, 
+        [offset + consts.OBJECT_HEADER_V1_SIZE, 
          offset + consts.OBJECT_HEADER_V1_SIZE + unpackedHeaderObj.object_header_size[0]],
       (e) => {
         
@@ -65,12 +65,12 @@ var DataObjects = (fileObj, offset) => {
     var offset = 0;
     var msgs = [];
     var completed = 0;
-
     for (var i = 0; i < unpackedHeaderObj.total_header_messages[0]; i++) {
       const currentMsg = utils.unpackStruct(consts.HEADER_MSG_INFO_V1, msgBytes, offset);
       currentMsg.offset_to_message = offset + 8;
       if (currentMsg.type[1] === consts.OBJECT_CONTINUATION_MSG_TYPE) {
         var unpacked = struct.unpack('<QQ', Buffer.from(msgBytes.buffer), offset + 8);
+        throw new Error("unimplemented");
       } else {
 
       }
