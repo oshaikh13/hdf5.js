@@ -5,6 +5,17 @@ const DataObjects = require('./DataObjects.js');
 
 var HDF5 = {};
 
+var Group = (name, dataObjects, parent) => {
+  var groupObj = {};
+  groupObj.parent = parent;
+  groupObj.file = parent._file;
+  groupObj.name = name;
+
+  groupObj._links = dataObjects.getLinks();
+  groupObj._dataObjects = dataObjects;
+  groupObj.attrs = null;
+}
+
 HDF5.File = function (file) {
   var fileObj = {};
 
@@ -29,7 +40,9 @@ HDF5.File = function (file) {
                        consts.SYMBOL_TABLE_ENTRY_SIZE, 
                        (err) => {
     if (err) throw new Error("crap");
-    const dataObjects = DataObjects(fileObj, fileObj.SuperBlock._rootSymbolTable.groupOffset[0]);
+    const dataObjects = DataObjects(fileObj, fileObj.SuperBlock._rootSymbolTable.groupOffset[0], (err) => {
+      Group('/', dataObjects, fileObj);
+    });
   }); 
 
   return fileObj;
