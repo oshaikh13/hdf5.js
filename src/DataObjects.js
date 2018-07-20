@@ -3,8 +3,29 @@ const consts = require('./consts.js');
 const struct = require('python-struct');
 const Buffer = require('buffer/').Buffer;
 
-var DataObjects = (fileObj, offset) => {
+var DataObjects = (fileObj, offset, onReadyCallback) => {
   const dataObj = {};
+
+  const setUpObject = (msgData, unpackedHeaderObj, msgs) => {
+      dataObj.msgs = msgs;
+      dataObj.msg_data = msgData;
+
+      // this is the offset passed initially to DataObjects
+      dataObj.offset = offset;
+      dataObj._globl_heaps = {};
+      dataObj.header = unpackedHeaderObj;
+
+      // cached attributes
+      dataObj._filter_pipeline = null;
+      dataObj._chunk_params_set = false;
+      dataObj._chunks = null;
+      dataObj._chunk_dims = null;
+      dataObj._chunk_address = null;
+
+      debugger;
+
+      onReadyCallback();
+  }
 
   // TODO: arg version is currently unused.
   // Implement dataobj version x, y, z, etc.
@@ -28,28 +49,12 @@ var DataObjects = (fileObj, offset) => {
         (e) => {
           const msgData = new Uint8Array(e.target.result);
           utils.parseV1Objects(msgData, unpackedHeaderObj, (msgs) => {
-            console.log(msgData, unpackedHeaderObj, msgs)
+            setUpObject(msgData, unpackedHeaderObj, msgs)
           });
         });
 
       }
 
-  
-
-      // dataObj.msgs = unpackedDataObj.msgs;
-      // dataObj.msg_data = unpackedDataObj.msg_data;
-      // dataObj.offset = offset;
-      // dataObj._globl_heaps = {};
-      // dataObj.header = unpackedDataObj.header;
-
-      // // cached attributes
-      // dataObj._filter_pipeline = null;
-      // dataObj._chunk_params_set = false;
-      // dataObj._chunks = null;
-      // dataObj._chunk_dims = null;
-      // dataObj._chunk_address = null;
-
-      // debugger;
 
     });
   }
