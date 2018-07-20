@@ -16,19 +16,24 @@ var DataObjects = (fileObj, offset) => {
       const dataObjHeaderBytes = new Uint8Array(e.target.result);  
 
       // the start loc is 0 because we're reading from the start of a slice
-      const unpackedHeaderObj = 
-        utils.unpackStruct(consts.OBJECT_HEADER_V1, dataObjHeaderBytes, 0);
-    
 
-      utils.fileChunkReader(fileObj._file, 
-        [offset + consts.OBJECT_HEADER_V1_SIZE, 
-         offset + consts.OBJECT_HEADER_V1_SIZE + unpackedHeaderObj.object_header_size[0]],
-      (e) => {
-        
-        utils.parseV1Objects(new Uint8Array(e.target.result), unpackedHeaderObj, () => {
+      if (version === 1) {
 
+        const unpackedHeaderObj = 
+          utils.unpackStruct(consts.OBJECT_HEADER_V1, dataObjHeaderBytes, 0);
+  
+        utils.fileChunkReader(fileObj._file, 
+          [offset + consts.OBJECT_HEADER_V1_SIZE, 
+           offset + consts.OBJECT_HEADER_V1_SIZE + unpackedHeaderObj.object_header_size[0] - 1],
+        (e) => {
+          const msgData = new Uint8Array(e.target.result);
+          utils.parseV1Objects(msgData, unpackedHeaderObj, (msgs) => {
+            console.log(msgData, unpackedHeaderObj, msgs)
+          });
         });
-      });
+
+      }
+
   
 
       // dataObj.msgs = unpackedDataObj.msgs;
@@ -62,6 +67,7 @@ var DataObjects = (fileObj, offset) => {
   });
 
   utils.parseV1Objects = function (msgBytes, unpackedHeaderObj, callback) {
+
     var offset = 0;
     var msgs = [];
     var completed = 0;
@@ -72,9 +78,12 @@ var DataObjects = (fileObj, offset) => {
         var unpacked = struct.unpack('<QQ', Buffer.from(msgBytes.buffer), offset + 8);
         throw new Error("unimplemented");
       } else {
-
+        msgs.push(currentMsg);
+        offset += 8 + currentMsg.size;
       }
     }
+
+    callback(msgs);
 
   }
 
