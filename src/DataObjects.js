@@ -22,8 +22,6 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
       dataObj._chunk_dims = null;
       dataObj._chunk_address = null;
 
-      debugger;
-
       onReadyCallback();
   }
 
@@ -90,6 +88,29 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
 
     callback(msgs);
 
+  }
+
+  // method definitions
+
+  dataObj.findMessageTypes = (msgType) => {
+    return dataObj.msgs.filter(msg => msg.type[0] === msgType)
+  }
+
+  dataObj.getLinks = () => {
+    const symTableMessages = dataObj.findMessageTypes(consts.SYMBOL_TABLE_MSG_TYPE)
+    if (symTableMessages.length) {
+      dataObj._getSymbolTableLinks(symTableMessages);
+    }
+  }
+
+  dataObj._getSymbolTableLinks = (symTableMessages) => {
+    if (symTableMessages.length != 1) /* throw something */;
+    if (symTableMessages[0].size[0] != 16) /* throw something */;
+
+    const symbolTableMessage = utils.unpackStruct(consts.SYMBOL_TABLE_MSG, dataObj.msg_data,
+      symTableMessages[0].offset_to_message);
+
+    console.log(symbolTableMessage);
   }
 
   return dataObj;

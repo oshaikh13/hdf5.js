@@ -63,8 +63,14 @@ consts.HEADER_MSG_INFO_V1 = {
   'reserved': 3,
 }
 
+consts.SYMBOL_TABLE_MSG = {
+  'btree_address': 8, // assume 8 byte addressing
+  'heap_address': 8 // assume 8 byte addressing
+}
+
 consts.OBJECT_HEADER_V1_SIZE = utils.structSize(consts.OBJECT_HEADER_V1);
 
 consts.OBJECT_CONTINUATION_MSG_TYPE = 0x0010;
+consts.SYMBOL_TABLE_MSG_TYPE = 0x0011
 
 module.exports = consts;
