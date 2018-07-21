@@ -1,3 +1,5 @@
+const Buffer = require('buffer/').Buffer;
+
 const utils = {};
 
 utils.structSize = (struct) => {
@@ -14,13 +16,12 @@ utils.unpackStruct = (structure, buffer, loc) => {
 
   for (var key in structure) {
     var numBytes = structure[key];
-    structValues[key] = [];
     var endByte = loc + numBytes;
-    for (loc; loc < endByte; loc++) {
-      structValues[key].push(buffer[loc]);
-    }
+    structValues[key] = buffer.slice(loc, endByte);
+    loc = endByte;
   }
 
+  debugger;
   return structValues;
 
 }

@@ -32,7 +32,7 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
                           [offset, offset + consts.OBJECT_HEADER_V1_SIZE],
     (e) => {
     
-      const dataObjHeaderBytes = new Uint8Array(e.target.result);  
+      const dataObjHeaderBytes = Buffer.from(e.target.result);  
 
       // the start loc is 0 because we're reading from the start of a slice
 
@@ -45,7 +45,7 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
           [offset + consts.OBJECT_HEADER_V1_SIZE, 
            offset + consts.OBJECT_HEADER_V1_SIZE + unpackedHeaderObj.object_header_size[0] - 1],
         (e) => {
-          const msgData = new Uint8Array(e.target.result);
+          const msgData = Buffer.from(e.target.result);
           utils.parseV1Objects(msgData, unpackedHeaderObj, (msgs) => {
             setUpObject(msgData, unpackedHeaderObj, msgs)
           });
@@ -62,7 +62,7 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
     if (e.target.readyState == FileReader.DONE) {
 
       var loadedFile = e.target.result;
-      const version = new Uint8Array(loadedFile)[0];
+      const version = Buffer.from(loadedFile)[0];
       // RIGHT NOW, WE DEAL WITH ONLY V1s
       readObjectHeader(version);
 

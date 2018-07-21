@@ -14,6 +14,7 @@ lowLevel.SuperBlock = (bytes, start) => {
       throw new Error("Invalid HDF5 file provided!");
   }
 
+  debugger;
   if (superBlockObject.contents['offset_size'] != 8 || superBlockObject.contents['length_size'] != 8) {
     throw new Error("File uses non 64-bit addressing.");
   }

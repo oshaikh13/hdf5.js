@@ -2,6 +2,7 @@ const lowLevel = require('./lowLevel.js');
 const utils = require('./utils.js');
 const consts = require('./consts.js');
 const DataObjects = require('./DataObjects.js');
+const Buffer = require('buffer/').Buffer;
 
 var HDF5 = {};
 
@@ -25,10 +26,7 @@ HDF5.File = function (file) {
   const readSuperBlock = (file, size, callback) => {
     utils.fileChunkReader(file, [0, size], (e) => {
       if (e.target.readyState == FileReader.DONE) {
-
-        var loadedFile = e.target.result;
-        const superBlockBuffer = new Uint8Array(loadedFile);
-
+        const superBlockBuffer = Buffer.from(e.target.result);
         // look at its superblock
         fileObj.SuperBlock = lowLevel.SuperBlock(superBlockBuffer, 0);
         callback(false);  
