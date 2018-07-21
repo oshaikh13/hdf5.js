@@ -39,7 +39,7 @@ HDF5.File = function (file) {
                        (err) => {
     if (err) throw new Error("crap");
     debugger;
-    const dataObjects = DataObjects(fileObj, fileObj.SuperBlock._rootSymbolTable.groupOffset[0], (err) => {
+    const dataObjects = DataObjects(fileObj, fileObj.SuperBlock._rootSymbolTable.groupOffset.toInt(), (err) => {
       Group('/', dataObjects, fileObj);
     });
   }); 
