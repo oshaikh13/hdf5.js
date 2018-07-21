@@ -2,6 +2,7 @@ const utils = require('./utils.js');
 const consts = require('./consts.js');
 const struct = require('python-struct');
 const Buffer = require('buffer/').Buffer;
+const lowLevel = require('./lowLevel.js');
 
 var DataObjects = (fileObj, offset, onReadyCallback) => {
   const dataObj = {};
@@ -59,14 +60,10 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
 
   // read the first byte at the offset to see the version of the dataobject
   utils.fileChunkReader(fileObj._file, [offset, offset], (e) => {
-    if (e.target.readyState == FileReader.DONE) {
-
-      var loadedFile = e.target.result;
-      const version = Buffer.from(loadedFile)[0];
-      // RIGHT NOW, WE DEAL WITH ONLY V1s
-      readObjectHeader(version);
-
-    }
+    var loadedFile = e.target.result;
+    const version = Buffer.from(loadedFile)[0];
+    // RIGHT NOW, WE DEAL WITH ONLY V1s
+    readObjectHeader(version); 
   });
 
   utils.parseV1Objects = function (msgBytes, unpackedHeaderObj, callback) {
@@ -106,10 +103,13 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
   dataObj._getSymbolTableLinks = (symTableMessages) => {
     if (symTableMessages.length != 1) /* throw something */;
     if (symTableMessages[0].get("size") != 16) /* throw something */;
+
     const symbolTableMessage = utils.unpackStruct(consts.SYMBOL_TABLE_MSG, dataObj.msg_data,
       symTableMessages[0].get("offset_to_message"));
 
-    console.log(symbolTableMessage);
+    const heap = lowLevel.Heap(fileObj, symbolTableMessage.get("heap_address"), (heapObj) => {
+      debugger;
+    });
   }
 
   return dataObj;

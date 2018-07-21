@@ -70,6 +70,15 @@ consts.SYMBOL_TABLE_MSG = new Map([
   ['heap_address', 'Q'],      // 8 byte addressing
 ])
 
+consts.LOCAL_HEAP = new Map([
+  ['signature', '4s'],
+  ['version', 'B'],
+  ['reserved', '3s'],
+  ['data_segment_size', 'Q'],         // 8 byte size of lengths
+  ['offset_to_free_list', 'Q'],       // 8 bytes size of lengths
+  ['address_of_data_segment', 'Q'],   // 8 byte addressing
+])
+
 consts.OBJECT_HEADER_V1_SIZE = utils.structSize(consts.OBJECT_HEADER_V1);
 
 consts.OBJECT_CONTINUATION_MSG_TYPE = 0x0010;

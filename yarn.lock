@@ -27,7 +27,7 @@ long@^3.2.0:
 
 "python-struct@https://github.com/oshaikh13/node-python-struct.git":
   version "1.0.6"
-  resolved "https://github.com/oshaikh13/node-python-struct.git#91527e9215a8dd13d951716f5d9042768e0f3683"
+  resolved "https://github.com/oshaikh13/node-python-struct.git#7e4a7d81a2bc613a0e9a11c5727adcc179f5dfa2"
   dependencies:
     arch "^2.1.1"
     buffer "^5.1.0"

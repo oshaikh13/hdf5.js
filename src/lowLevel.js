@@ -60,4 +60,26 @@ lowLevel.SymbolTable  = (bytes, start, rootGroup) => {
 
 }
 
+lowLevel.Heap = (fileObj, offset, onReady) => {
+
+  const heapObj = {};
+
+  utils.fileChunkReader(fileObj._file, [offset, offset + utils.structSize(consts.LOCAL_HEAP) - 1], (e) => {
+    const fileBuffer = Buffer.from(e.target.result);
+    const localHeap = utils.unpackStruct(consts.LOCAL_HEAP, fileBuffer, 0);
+    if (localHeap.get("signature") != "HEAP"); /* throw something */
+    if (localHeap.get("version") != 0); /* throw something */
+    const dataSegmentAddress = localHeap.get("address_of_data_segment");
+
+    utils.fileChunkReader(fileObj._file, [dataSegmentAddress.toInt(), 
+                                          dataSegmentAddress.toInt() + localHeap.get("data_segment_size").toInt() - 1], (e) => {
+      const heapDataBuffer = Buffer.from(e.target.result);
+      heapObj._contents = localHeap;
+      heapObj.data = heapDataBuffer;
+      onReady(heapObj);
+    })
+    
+  })
+}
+
 module.exports = lowLevel;

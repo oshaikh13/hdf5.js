@@ -25,12 +25,12 @@ HDF5.File = function (file) {
 
   const readSuperBlock = (file, size, callback) => {
     utils.fileChunkReader(file, [0, size], (e) => {
-      if (e.target.readyState == FileReader.DONE) {
-        const superBlockBuffer = Buffer.from(e.target.result);
-        // look at its superblock
-        fileObj.SuperBlock = lowLevel.SuperBlock(superBlockBuffer, 0);
-        callback(false);  
-      }
+
+      const superBlockBuffer = Buffer.from(e.target.result);
+      // look at its superblock
+      fileObj.SuperBlock = lowLevel.SuperBlock(superBlockBuffer, 0);
+      callback(false);  
+      
     });
   }
 
@@ -38,7 +38,6 @@ HDF5.File = function (file) {
                        consts.SYMBOL_TABLE_ENTRY_SIZE, 
                        (err) => {
     if (err) throw new Error("crap");
-    debugger;
     const dataObjects = DataObjects(fileObj, fileObj.SuperBlock._rootSymbolTable.groupOffset.toInt(), (err) => {
       Group('/', dataObjects, fileObj);
     });
