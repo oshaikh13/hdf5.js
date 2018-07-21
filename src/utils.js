@@ -11,7 +11,7 @@ utils.structSize = (structure) => {
 utils.unpackStruct = (structure, buffer, loc) => {
 
   const fmt = '<' + [...structure.values()].join("");
-  const values = struct.unpack(fmt, buffer, loc);
+  const values = struct.unpack(fmt, buffer, loc, true);
   return new Map ([...structure.keys()].map((elem, index) => [elem, values[index]]));
 
 }
@@ -21,7 +21,9 @@ utils.fileReader = new FileReader();
 utils.fileChunkReader = (file, intervals, callback) => {
 
   utils.fileReader.onloadend = (e) => {
-    callback(e);
+    if (e.target.readyState == FileReader.DONE) {
+      callback(e);
+    }
   }
 
   const selectedBlob = file.slice(intervals[0], intervals[1] + 1);
