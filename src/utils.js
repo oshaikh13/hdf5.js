@@ -12,8 +12,7 @@ utils.unpackStruct = (structure, buffer, loc) => {
 
   const fmt = '<' + [...structure.values()].join("");
   const values = struct.unpack(fmt, buffer, loc);
-  const mapped = new Map ([...structure.keys()].map((elem, index) => [elem, values[index]]));
-  return mapped;
+  return new Map ([...structure.keys()].map((elem, index) => [elem, values[index]]));
 
 }
 

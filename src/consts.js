@@ -1,8 +1,9 @@
 const utils = require('./utils.js');
+const Buffer = require('buffer/').Buffer;
 
 const consts = {};
 
-consts.VALID_FORMAT_SIGNATURE = [137, 72, 68, 70, 13, 10, 26, 10];
+consts.VALID_FORMAT_SIGNATURE = Buffer.from([137, 72, 68, 70, 13, 10, 26, 10]).toString();
 
 // Hashmaps with fields that point to its size in bytes
 consts.SUPERBLOCK_V0 = new Map ([
@@ -57,17 +58,17 @@ consts.OBJECT_HEADER_V1 = new Map([
   ['padding', 'I'],
 ])
 
-consts.HEADER_MSG_INFO_V1 = {
-  'type': 2,
-  'size': 2,
-  'flags': 1,
-  'reserved': 3,
-}
+consts.HEADER_MSG_INFO_V1 = new Map([
+  ['type', 'H'],
+  ['size', 'H'],
+  ['flags', 'B'],
+  ['reserved', '3s'],
+]);
 
-consts.SYMBOL_TABLE_MSG = {
-  'btree_address': 8, // assume 8 byte addressing
-  'heap_address': 8 // assume 8 byte addressing
-}
+consts.SYMBOL_TABLE_MSG = new Map([
+  ['btree_address', 'Q'],     // 8 bytes addressing
+  ['heap_address', 'Q'],      // 8 byte addressing
+])
 
 consts.OBJECT_HEADER_V1_SIZE = utils.structSize(consts.OBJECT_HEADER_V1);
 

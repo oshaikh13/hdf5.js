@@ -1,5 +1,4 @@
 const HDF5 = require('./highLevel.js');
-
 var F = null;
 
 document.addEventListener("DOMContentLoaded", function(event) { 
@@ -7,7 +6,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
   document.getElementById("body").addEventListener("dragover", onDragOver, false);
   document.getElementById("body").addEventListener("dragleave", onDragLeave, false);
   document.getElementById("body").addEventListener("drop", onDrop, false);
-
 });  
 
 
@@ -27,7 +25,6 @@ function onDrop(e) {
 
   // get the dropped files
   var files = e.dataTransfer.files;
-
   // if anything is wrong with the dropped files, exit
   if (typeof files == "undefined" || files.length == 0) {
     return;

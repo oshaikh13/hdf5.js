@@ -9,20 +9,16 @@ lowLevel.SuperBlock = (bytes, start) => {
   var superBlockObject = {};
 
   superBlockObject.contents = utils.unpackStruct(consts.SUPERBLOCK_V0, bytes, start);
-  debugger;
   
-  for (var i = 0; i < consts.VALID_FORMAT_SIGNATURE.length; i++) {
-    if (consts.VALID_FORMAT_SIGNATURE[i] != superBlockObject.contents['format_signature'][i])
-      throw new Error("Invalid HDF5 file provided!");
+  if (consts.VALID_FORMAT_SIGNATURE != superBlockObject.contents.get('format_signature')) {
+    throw new Error("Invalid HDF5 file provided!");
   }
 
-  debugger;
-  if (superBlockObject.contents['offset_size'].readUInt8() != 8 || superBlockObject.contents['length_size'].readUInt8() != 8) {
+  if (superBlockObject.contents.get('offset_size') != 8 || superBlockObject.contents.get('length_size') != 8) {
     throw new Error("File uses non 64-bit addressing.");
   }
 
   superBlockObject.endOfBlock = start + consts.SUPERBLOCK_V0_SIZE;
-
   superBlockObject._rootSymbolTable = lowLevel.SymbolTable(bytes, 
     superBlockObject.endOfBlock, true);
 
@@ -43,19 +39,19 @@ lowLevel.SymbolTable  = (bytes, start, rootGroup) => {
   var node;
 
   if (rootGroup) {
-    node = {
-      'symbols': 1
-    }
+    node = new Map([
+      ['symbols', 1]
+    ])
   } else {
     node = utils.unpackStruct(consts.SYMBOL_TABLE_NODE, bytes, start);
   }
 
   var entries = [];
-  for (var i = 0; i < node['symbols']; i++) {
+  for (var i = 0; i < node.get('symbols'); i++) {
     entries.push(utils.unpackStruct(consts.SYMBOL_TABLE_ENTRY, bytes, start));
   }
 
-  if (rootGroup) symTableObj.groupOffset = entries[0]['object_header_address']; 
+  if (rootGroup) symTableObj.groupOffset = entries[0].get('object_header_address'); 
 
   symTableObj.entries = entries;
   symTableObj._contents = node;
