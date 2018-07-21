@@ -1,28 +1,19 @@
 const Buffer = require('buffer/').Buffer;
+const struct = require('python-struct');
 
 const utils = {};
 
-utils.structSize = (struct) => {
-  var size = 0;
-  for (var key in struct) {
-    size += struct[key];
-  }
-  return size;
+utils.structSize = (structure) => {
+  const fmt = '<' + [...structure.values()].join("");
+  return struct.sizeOf(fmt)
 }
 
 utils.unpackStruct = (structure, buffer, loc) => {
 
-  var structValues = {};
-
-  for (var key in structure) {
-    var numBytes = structure[key];
-    var endByte = loc + numBytes;
-    structValues[key] = buffer.slice(loc, endByte);
-    loc = endByte;
-  }
-
-  debugger;
-  return structValues;
+  const fmt = '<' + [...structure.values()].join("");
+  const values = struct.unpack(fmt, buffer, loc);
+  const mapped = new Map ([...structure.keys()].map((elem, index) => [elem, values[index]]));
+  return mapped;
 
 }
 
