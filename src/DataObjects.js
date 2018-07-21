@@ -41,9 +41,11 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
         const unpackedHeaderObj = 
           utils.unpackStruct(consts.OBJECT_HEADER_V1, dataObjHeaderBytes, 0);
   
+        debugger;
+
         utils.fileChunkReader(fileObj._file, 
           [offset + consts.OBJECT_HEADER_V1_SIZE, 
-           offset + consts.OBJECT_HEADER_V1_SIZE + unpackedHeaderObj.object_header_size[0] - 1],
+           offset + consts.OBJECT_HEADER_V1_SIZE + unpackedHeaderObj.object_header_size.readUInt8() - 1],
         (e) => {
           const msgData = Buffer.from(e.target.result);
           utils.parseV1Objects(msgData, unpackedHeaderObj, (msgs) => {
@@ -74,11 +76,12 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
     var offset = 0;
     var msgs = [];
     var completed = 0;
-    for (var i = 0; i < unpackedHeaderObj.total_header_messages[0]; i++) {
+    for (var i = 0; i < unpackedHeaderObj.total_header_messages.readUInt8(); i++) {
       const currentMsg = utils.unpackStruct(consts.HEADER_MSG_INFO_V1, msgBytes, offset);
       currentMsg.offset_to_message = offset + 8;
-      if (currentMsg.type[1] === consts.OBJECT_CONTINUATION_MSG_TYPE) {
-        var unpacked = struct.unpack('<QQ', Buffer.from(msgBytes.buffer), offset + 8);
+      debugger;
+      if (currentMsg.type.readUInt8() === consts.OBJECT_CONTINUATION_MSG_TYPE) {
+        var unpacked = struct.unpack('<QQ', msgBytes, offset + 8);
         throw new Error("unimplemented");
       } else {
         msgs.push(currentMsg);
@@ -105,8 +108,7 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
 
   dataObj._getSymbolTableLinks = (symTableMessages) => {
     if (symTableMessages.length != 1) /* throw something */;
-    if (symTableMessages[0].size[0] != 16) /* throw something */;
-
+    if (symTableMessages[0].size.readUInt8() != 16) /* throw something */;
     const symbolTableMessage = utils.unpackStruct(consts.SYMBOL_TABLE_MSG, dataObj.msg_data,
       symTableMessages[0].offset_to_message);
 

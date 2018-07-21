@@ -15,7 +15,7 @@ lowLevel.SuperBlock = (bytes, start) => {
   }
 
   debugger;
-  if (superBlockObject.contents['offset_size'] != 8 || superBlockObject.contents['length_size'] != 8) {
+  if (superBlockObject.contents['offset_size'].readUInt8() != 8 || superBlockObject.contents['length_size'].readUInt8() != 8) {
     throw new Error("File uses non 64-bit addressing.");
   }
 
