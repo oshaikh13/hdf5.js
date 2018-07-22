@@ -82,6 +82,18 @@ consts.LOCAL_HEAP = new Map([
 consts.OBJECT_HEADER_V1_SIZE = utils.structSize(consts.OBJECT_HEADER_V1);
 
 consts.OBJECT_CONTINUATION_MSG_TYPE = 0x0010;
-consts.SYMBOL_TABLE_MSG_TYPE = 0x0011
+consts.SYMBOL_TABLE_MSG_TYPE = 0x0011;
+
+consts.B_LINK_NODE_V1 = new Map([
+  ['signature', '4s'],
+
+  ['node_type', 'B'],
+  ['node_level', 'B'],
+  ['entries_used', 'H'],
+
+  ['left_sibling', 'Q'],     // # 8 byte addressing
+  ['right_sibling', 'Q'],    // # 8 byte addressing
+])
+
 
 module.exports = consts;

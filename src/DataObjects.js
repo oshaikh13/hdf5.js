@@ -3,6 +3,7 @@ const consts = require('./consts.js');
 const struct = require('python-struct');
 const Buffer = require('buffer/').Buffer;
 const lowLevel = require('./lowLevel.js');
+const BTree = require('./BTree.js');
 
 var DataObjects = (fileObj, offset, onReadyCallback) => {
   const dataObj = {};
@@ -107,9 +108,14 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
     const symbolTableMessage = utils.unpackStruct(consts.SYMBOL_TABLE_MSG, dataObj.msg_data,
       symTableMessages[0].get("offset_to_message"));
 
-    const heap = lowLevel.Heap(fileObj, symbolTableMessage.get("heap_address"), (heapObj) => {
-      debugger;
+    const heap = lowLevel.Heap(fileObj, symbolTableMessage.get("heap_address").toInt(), (heapObj) => {
+      console.log(heapObj);
     });
+
+    const bTree = BTree(fileObj, symbolTableMessage.get("btree_address").toInt(), (bTreeObj) => {
+      console.log(bTreeObj);
+    });
+    
   }
 
   return dataObj;

@@ -16,18 +16,21 @@ utils.unpackStruct = (structure, buffer, loc) => {
 
 }
 
-utils.fileReader = new FileReader();
+// utils.fileReader = new FileReader();
 
 utils.fileChunkReader = (file, intervals, callback) => {
+  const fileReader = new FileReader();
 
-  utils.fileReader.onloadend = (e) => {
+  /*utils.fileReader*/fileReader.onloadend = (e) => {
     if (e.target.readyState == FileReader.DONE) {
       callback(e);
     }
   }
 
   const selectedBlob = file.slice(intervals[0], intervals[1] + 1);
-  utils.fileReader.readAsArrayBuffer(selectedBlob);
+
+  // utils.fileReader.readAsArrayBuffer(selectedBlob);
+  fileReader.readAsArrayBuffer(selectedBlob);
   
 }
 
