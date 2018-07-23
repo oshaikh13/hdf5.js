@@ -80,6 +80,8 @@ lowLevel.Heap = (fileObj, offset, onReady) => {
     })
     
   })
+
+  return heapObj;
 }
 
 module.exports = lowLevel;

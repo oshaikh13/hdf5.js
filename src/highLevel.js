@@ -15,6 +15,8 @@ var Group = (name, dataObjects, parent) => {
   groupObj._links = dataObjects.getLinks();
   groupObj._dataObjects = dataObjects;
   groupObj.attrs = null;
+
+  return groupObj;
 }
 
 HDF5.File = function (file) {
