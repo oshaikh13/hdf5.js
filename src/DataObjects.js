@@ -109,11 +109,10 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
       symTableMessages[0].get("offset_to_message"));
 
     const heap = lowLevel.Heap(fileObj, symbolTableMessage.get("heap_address").toInt(), (heapObj) => {
-      console.log(heapObj);
     });
 
     const bTree = BTree(fileObj, symbolTableMessage.get("btree_address").toInt(), (bTreeObj) => {
-      console.log(bTreeObj);
+      console.log(bTreeObj.symbolTableAddresses());
     });
     
   }
