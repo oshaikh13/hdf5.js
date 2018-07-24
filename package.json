@@ -8,5 +8,8 @@
   "dependencies": {
     "buffer": "^5.1.0",
     "python-struct": "https://github.com/oshaikh13/node-python-struct.git"
+  },
+  "devDependencies": {
+    "typescript": "^2.9.2"
   }
 }
