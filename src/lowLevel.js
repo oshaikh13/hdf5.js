@@ -4,23 +4,31 @@ const consts = require('./consts.js');
 // Low level API's for HDF5 reader
                   // UINT   8
 const lowLevel = {};
-lowLevel.SuperBlock = (bytes, start) => {
+lowLevel.SuperBlock = (fileObj, offset, callback) => {
 
   var superBlockObject = {};
 
-  superBlockObject.contents = utils.unpackStruct(consts.SUPERBLOCK_V0, bytes, start);
+  utils.fileChunkReader(fileObj._file, [offset, offset + consts.SUPERBLOCK_V0_SIZE - 1], (e) => {
+
+    const superBlockBuffer = Buffer.from(e.target.result);
+
+    superBlockObject.contents = utils.unpackStruct(consts.SUPERBLOCK_V0, superBlockBuffer, offset);
   
-  if (consts.VALID_FORMAT_SIGNATURE != superBlockObject.contents.get('format_signature')) {
-    throw new Error("Invalid HDF5 file provided!");
-  }
+    if (consts.VALID_FORMAT_SIGNATURE != superBlockObject.contents.get('format_signature')) {
+      throw new Error("Invalid HDF5 file provided!");
+    }
+  
+    if (superBlockObject.contents.get('offset_size') != 8 || superBlockObject.contents.get('length_size') != 8) {
+      throw new Error("File uses non 64-bit addressing.");
+    }
+  
+    superBlockObject.endOfBlock = offset + consts.SUPERBLOCK_V0_SIZE;
+    superBlockObject._rootSymbolTable = lowLevel.SymbolTable(fileObj, 
+      superBlockObject.endOfBlock, true, () => {
+        callback(superBlockObject);  
+    });
 
-  if (superBlockObject.contents.get('offset_size') != 8 || superBlockObject.contents.get('length_size') != 8) {
-    throw new Error("File uses non 64-bit addressing.");
-  }
-
-  superBlockObject.endOfBlock = start + consts.SUPERBLOCK_V0_SIZE;
-  superBlockObject._rootSymbolTable = lowLevel.SymbolTable(bytes, 
-    superBlockObject.endOfBlock, true);
+  });
 
   return superBlockObject;
 
@@ -32,29 +40,49 @@ lowLevel.SuperBlock = (bytes, start) => {
  * rootGroup - is this the rootgroup? - boolean
  *
  */
-lowLevel.SymbolTable  = (bytes, start, rootGroup) => {
+lowLevel.SymbolTable  = (fileObj, offset, rootGroup, callback) => {
 
   var symTableObj = {};
 
   var node;
 
-  if (rootGroup) {
-    node = new Map([
-      ['symbols', 1]
-    ])
-  } else {
-    node = utils.unpackStruct(consts.SYMBOL_TABLE_NODE, bytes, start);
+  const readSymTableNode = (offset, rootgroup, callback) => {
+    if (rootgroup) {
+      // No header, one entry
+      callback(new Map([
+        ['symbols', 1]
+      ]), offset);
+
+    } else {
+      utils.fileChunkReader(fileObj._file, [offset, offset + utils.structSize(consts.SYMBOL_TABLE_NODE) - 1], (e) => {
+        offset += utils.structSize(consts.SYMBOL_TABLE_NODE);
+        callback(utils.unpackStruct(consts.SYMBOL_TABLE_NODE, Buffer.from(e.target.result), 0), offset);
+      });
+    }
   }
 
-  var entries = [];
-  for (var i = 0; i < node.get('symbols'); i++) {
-    entries.push(utils.unpackStruct(consts.SYMBOL_TABLE_ENTRY, bytes, start));
-  }
 
-  if (rootGroup) symTableObj.groupOffset = entries[0].get('object_header_address'); 
+  readSymTableNode(offset, rootGroup, (node) => {
+    const endOffset = offset + (utils.structSize(consts.SYMBOL_TABLE_ENTRY) * node.get('symbols')) - 1;
 
-  symTableObj.entries = entries;
-  symTableObj._contents = node;
+    utils.fileChunkReader(fileObj._file, [offset, endOffset], (e) => {
+      
+      const nodeEntryBuffer = Buffer.from(e.target.result);
+      let readFrom = 0;
+      let entries = [];
+      for (var i = 0; i < node.get('symbols'); i++) {
+        entries.push(utils.unpackStruct(consts.SYMBOL_TABLE_ENTRY, nodeEntryBuffer, readFrom));
+        readFrom += utils.structSize(consts.SYMBOL_TABLE_ENTRY);
+      }
+    
+      if (rootGroup) symTableObj.groupOffset = entries[0].get('object_header_address'); 
+    
+      symTableObj.entries = entries;
+      symTableObj._contents = node;
+      callback(symTableObj);
+
+    });
+  });
 
   return symTableObj;
 
