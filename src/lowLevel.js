@@ -55,18 +55,19 @@ lowLevel.SymbolTable  = (fileObj, offset, rootGroup, callback) => {
 
     } else {
       utils.fileChunkReader(fileObj._file, [offset, offset + utils.structSize(consts.SYMBOL_TABLE_NODE) - 1], (e) => {
-        offset += utils.structSize(consts.SYMBOL_TABLE_NODE);
-        callback(utils.unpackStruct(consts.SYMBOL_TABLE_NODE, Buffer.from(e.target.result), 0), offset);
+        const node = utils.unpackStruct(consts.SYMBOL_TABLE_NODE, Buffer.from(e.target.result), 0);
+        const nextOffset = offset + utils.structSize(consts.SYMBOL_TABLE_NODE);
+        callback(node, nextOffset);
       });
     }
   }
 
 
-  readSymTableNode(offset, rootGroup, (node) => {
-    const endOffset = offset + (utils.structSize(consts.SYMBOL_TABLE_ENTRY) * node.get('symbols')) - 1;
+  readSymTableNode(offset, rootGroup, (node, nextOffset) => {
+    // nextOffset targets positions for the upcoming symbol table entries
+    const endOffset = nextOffset + (utils.structSize(consts.SYMBOL_TABLE_ENTRY) * node.get('symbols')) - 1;
 
-    utils.fileChunkReader(fileObj._file, [offset, endOffset], (e) => {
-      
+    utils.fileChunkReader(fileObj._file, [nextOffset, endOffset], (e) => {
       const nodeEntryBuffer = Buffer.from(e.target.result);
       let readFrom = 0;
       let entries = [];
@@ -83,6 +84,14 @@ lowLevel.SymbolTable  = (fileObj, offset, rootGroup, callback) => {
 
     });
   });
+
+  symTableObj.assignName = (heap) => {
+    symTableObj.entries.forEach((entry) => {
+      const offset = entry.get("link_name_offset");
+      const linkName = heap.getObjectName(offset);
+      entry.set("link_name", linkName);
+    })
+  }
 
   return symTableObj;
 
@@ -108,6 +117,9 @@ lowLevel.Heap = (fileObj, offset, onReady) => {
     })
     
   })
+
+  heapObj.getObjectName = (offset) => {
+  }
 
   return heapObj;
 }

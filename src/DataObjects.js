@@ -102,20 +102,37 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
   }
 
   dataObj._getSymbolTableLinks = (symTableMessages) => {
+    
+    let heap;
+    let bTree;
+
     if (symTableMessages.length != 1) /* throw something */;
     if (symTableMessages[0].get("size") != 16) /* throw something */;
 
     const symbolTableMessage = utils.unpackStruct(consts.SYMBOL_TABLE_MSG, dataObj.msg_data,
       symTableMessages[0].get("offset_to_message"));
 
-    const heap = lowLevel.Heap(fileObj, symbolTableMessage.get("heap_address").toInt(), (heapObj) => {
-    });
+    const updateSymTables = (heap, bTree) => {
 
-    const bTree = BTree(fileObj, symbolTableMessage.get("btree_address").toInt(), (bTreeObj) => {
-      bTreeObj.symbolTableAddresses().forEach((addr) => {
-        // const table = lowLevel.SymbolTable()
+      if (!heap || !bTree) return;
+
+      const links = {};
+      bTree.symbolTableAddresses().forEach((addr) => {
+        lowLevel.SymbolTable(fileObj, addr, false, (symTable) => {
+          symTable.assignName(heap);
+        });
       })
       
+    }
+
+    lowLevel.Heap(fileObj, symbolTableMessage.get("heap_address").toInt(), (heapObj) => {
+      heap = heapObj;
+      updateSymTables(heap, bTree);
+    });
+
+    BTree(fileObj, symbolTableMessage.get("btree_address").toInt(), (bTreeObj) => {
+      bTree = bTreeObj;
+      updateSymTables(heap, bTree);
     });
     
   }
