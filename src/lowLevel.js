@@ -44,8 +44,6 @@ lowLevel.SymbolTable  = (fileObj, offset, rootGroup, callback) => {
 
   var symTableObj = {};
 
-  var node;
-
   const readSymTableNode = (offset, rootgroup, callback) => {
     if (rootgroup) {
       // No header, one entry
@@ -88,10 +86,15 @@ lowLevel.SymbolTable  = (fileObj, offset, rootGroup, callback) => {
   symTableObj.assignName = (heap) => {
     symTableObj.entries.forEach((entry) => {
       const offset = entry.get("link_name_offset");
-      const linkName = heap.getObjectName(offset);
+      const linkName = heap.getObjectName(offset).toString();
       entry.set("link_name", linkName);
     })
   }
+
+  symTableObj.getLinks = () => symTableObj.entries.reduce((a, b) => {
+    a[b.get("link_name")] = b.get("object_header_address");
+    return a;
+  }, {});
 
   return symTableObj;
 
@@ -119,6 +122,8 @@ lowLevel.Heap = (fileObj, offset, onReady) => {
   })
 
   heapObj.getObjectName = (offset) => {
+    const end = heapObj.data.indexOf(0, offset);
+    return heapObj.data.slice(offset, end);
   }
 
   return heapObj;

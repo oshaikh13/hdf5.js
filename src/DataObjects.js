@@ -97,11 +97,13 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
   dataObj.getLinks = () => {
     const symTableMessages = dataObj.findMessageTypes(consts.SYMBOL_TABLE_MSG_TYPE)
     if (symTableMessages.length) {
-      dataObj._getSymbolTableLinks(symTableMessages);
+      dataObj._getSymbolTableLinks(symTableMessages, (links) => {
+        console.log(links);
+      });
     }
   }
 
-  dataObj._getSymbolTableLinks = (symTableMessages) => {
+  dataObj._getSymbolTableLinks = (symTableMessages, callback) => {
     
     let heap;
     let bTree;
@@ -116,10 +118,20 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
 
       if (!heap || !bTree) return;
 
-      const links = {};
-      bTree.symbolTableAddresses().forEach((addr) => {
+      const symbolTableAddresses = bTree.symbolTableAddresses();
+
+      let links = {};
+      let completed = 0;
+      let totalSymTables = symbolTableAddresses.length;
+
+      symbolTableAddresses.forEach((addr) => {
         lowLevel.SymbolTable(fileObj, addr, false, (symTable) => {
           symTable.assignName(heap);
+
+          // stage 3 proposal for object destructuring isn't supported :(
+          links = Object.assign(symTable.getLinks(), links);
+          
+          if (++completed === totalSymTables) callback(links);
         });
       })
       
