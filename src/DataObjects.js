@@ -112,7 +112,10 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
     });
 
     const bTree = BTree(fileObj, symbolTableMessage.get("btree_address").toInt(), (bTreeObj) => {
-      console.log(bTreeObj.symbolTableAddresses());
+      bTreeObj.symbolTableAddresses().forEach((addr) => {
+        // const table = lowLevel.SymbolTable()
+      })
+      
     });
     
   }

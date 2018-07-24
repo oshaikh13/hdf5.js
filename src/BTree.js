@@ -52,8 +52,8 @@ const BTree = (fileObj, offset, onReady) => {
   });
 
   bTreeObj.symbolTableAddresses = () => bTreeObj.allNodes[0]
-              .reduce((a, b) => a.concat(...b.get("addresses")), [])
-              .map((long) => long.toInt());
+          .reduce((a, b) => a.concat(...b.get("addresses")), [])
+          .map((long) => long.toInt());
   
   
   // reads the root node, offset is the start of the BTree.
