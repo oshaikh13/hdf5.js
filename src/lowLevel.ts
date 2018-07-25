@@ -61,7 +61,7 @@ const lowLevel = {
     }
   
   
-    readSymTableNode(offset, rootGroup, (node, nextOffset) => {
+    readSymTableNode(offset, rootGroup, (node: Map<string, any>, nextOffset: number) => {
       // nextOffset targets positions for the upcoming symbol table entries
       const endOffset = nextOffset + (utils.structSize(consts.SYMBOL_TABLE_ENTRY) * node.get('symbols')) - 1;
   
@@ -91,7 +91,7 @@ const lowLevel = {
       })
     }
   
-    symTableObj.getLinks = () => symTableObj.entries.reduce((a, b) => {
+    symTableObj.getLinks = () => symTableObj.entries.reduce((a, b) : object => {
       a[b.get("link_name")] = b.get("object_header_address");
       return a;
     }, {});
@@ -121,7 +121,7 @@ const lowLevel = {
       
     })
   
-    heapObj.getObjectName = (offset: number) => {
+    heapObj.getObjectName = (offset: number) : Uint8Array => {
       const end = heapObj.data.indexOf(0, offset);
       return heapObj.data.slice(offset, end);
     }

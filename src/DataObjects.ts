@@ -4,7 +4,7 @@ import struct from 'python-struct';
 import { Buffer } from 'buffer/';
 import lowLevel from './lowLevel';
 import BTree from './BTree';
-import { FileObj, DataObj, BTree as BTreeInterface, Heap } from './interfaces';
+import { FileObj, DataObj, BTree as BTreeInterface, Heap, SymbolTable } from './interfaces';
 
 
 var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj => {
@@ -51,7 +51,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
            offset + utils.structSize(consts.OBJECT_HEADER_V1) + unpackedHeaderObj.get("object_header_size") - 1],
         (e) => {
           const msgData = Buffer.from(e.target.result);
-          dataObj.parseV1Objects(msgData, unpackedHeaderObj, (msgs) => {
+          dataObj.parseV1Objects(msgData, unpackedHeaderObj, (msgs: Array<Map<string, any>>) => {
             setUpObject(msgData, unpackedHeaderObj, msgs)
           });
         });
@@ -106,7 +106,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     }
   }
 
-  dataObj._getSymbolTableLinks = (symTableMessages: Array<any>, callback) : void => {
+  dataObj._getSymbolTableLinks = (symTableMessages: Array<Map<string, any>>, callback) : void => {
     
     let heap;
     let bTree;
@@ -127,8 +127,8 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
       let completed = 0;
       let totalSymTables = symbolTableAddresses.length;
 
-      symbolTableAddresses.forEach((addr) => {
-        lowLevel.SymbolTable(fileObj, addr, false, (symTable) => {
+      symbolTableAddresses.forEach((addr: number) => {
+        lowLevel.SymbolTable(fileObj, addr, false, (symTable: SymbolTable) => {
           symTable.assignName(heap);
 
           // stage 3 proposal for object destructuring isn't supported :(
@@ -140,12 +140,12 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
       
     }
 
-    lowLevel.Heap(fileObj, symbolTableMessage.get("heap_address").toInt(), (heapObj) => {
+    lowLevel.Heap(fileObj, symbolTableMessage.get("heap_address").toInt(), (heapObj: Heap) => {
       heap = heapObj;
       updateSymTables(heap, bTree);
     });
 
-    BTree(fileObj, symbolTableMessage.get("btree_address").toInt(), (bTreeObj) => {
+    BTree(fileObj, symbolTableMessage.get("btree_address").toInt(), (bTreeObj: BTreeInterface) => {
       bTree = bTreeObj;
       updateSymTables(heap, bTree);
     });
