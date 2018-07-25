@@ -1,14 +1,17 @@
-const utils = require('./utils.js');
-const consts = require('./consts.js');
-const struct = require('python-struct');
-const Buffer = require('buffer/').Buffer;
-const lowLevel = require('./lowLevel.js');
-const BTree = require('./BTree.js');
+import utils from './utils';
+import consts from './consts';
+import struct from 'python-struct';
+import { Buffer } from 'buffer/';
+import lowLevel from './lowLevel';
+import BTree from './BTree';
+import { FileObj, DataObj, BTree as BTreeInterface, Heap, SymbolTable } from './interfaces';
 
-var DataObjects = (fileObj, offset, onReadyCallback) => {
-  const dataObj = {};
 
-  const setUpObject = (msgData, unpackedHeaderObj, msgs) => {
+var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj => {
+  
+  const dataObj = <DataObj>{};
+
+  const setUpObject = (msgData: Uint8Array, unpackedHeaderObj: Map<string, any>, msgs: Array<Map<string, any>>) : void => {
       dataObj.msgs = msgs;
       dataObj.msg_data = msgData;
 
@@ -29,9 +32,9 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
 
   // TODO: arg version is currently unused.
   // Implement dataobj version x, y, z, etc.
-  const readObjectHeader = (version) => {
+  const readObjectHeader = (version: number) : void => {
     utils.fileChunkReader(fileObj._file, 
-                          [offset, offset + consts.OBJECT_HEADER_V1_SIZE],
+                          [offset, offset + utils.structSize(consts.OBJECT_HEADER_V1)],
     (e) => {
     
       const dataObjHeaderBytes = Buffer.from(e.target.result);  
@@ -44,11 +47,11 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
           utils.unpackStruct(consts.OBJECT_HEADER_V1, dataObjHeaderBytes, 0);
   
         utils.fileChunkReader(fileObj._file, 
-          [offset + consts.OBJECT_HEADER_V1_SIZE, 
-           offset + consts.OBJECT_HEADER_V1_SIZE + unpackedHeaderObj.get("object_header_size") - 1],
+          [offset + utils.structSize(consts.OBJECT_HEADER_V1), 
+           offset + utils.structSize(consts.OBJECT_HEADER_V1) + unpackedHeaderObj.get("object_header_size") - 1],
         (e) => {
           const msgData = Buffer.from(e.target.result);
-          utils.parseV1Objects(msgData, unpackedHeaderObj, (msgs) => {
+          dataObj.parseV1Objects(msgData, unpackedHeaderObj, (msgs: Array<Map<string, any>>) => {
             setUpObject(msgData, unpackedHeaderObj, msgs)
           });
         });
@@ -67,7 +70,9 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
     readObjectHeader(version); 
   });
 
-  utils.parseV1Objects = function (msgBytes, unpackedHeaderObj, callback) {
+  // method definitions
+
+  dataObj.parseV1Objects = function (msgBytes: Uint8Array, unpackedHeaderObj: Map<string, any>, callback) : void {
 
     var offset = 0;
     var msgs = [];
@@ -88,9 +93,7 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
 
   }
 
-  // method definitions
-
-  dataObj.findMessageTypes = (msgType) => {
+  dataObj.findMessageTypes = (msgType: number) : Map<string, any>[] => {
     return dataObj.msgs.filter(msg => msg.get("type") === msgType)
   }
 
@@ -103,18 +106,18 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
     }
   }
 
-  dataObj._getSymbolTableLinks = (symTableMessages, callback) => {
+  dataObj._getSymbolTableLinks = (symTableMessages: Array<Map<string, any>>, callback) : void => {
     
     let heap;
     let bTree;
 
-    if (symTableMessages.length != 1) /* throw something */;
-    if (symTableMessages[0].get("size") != 16) /* throw something */;
+    if (symTableMessages.length != 1) {} /* throw something */;
+    if (symTableMessages[0].get("size") != 16) {} /* throw something */;
 
     const symbolTableMessage = utils.unpackStruct(consts.SYMBOL_TABLE_MSG, dataObj.msg_data,
       symTableMessages[0].get("offset_to_message"));
 
-    const updateSymTables = (heap, bTree) => {
+    const updateSymTables = (heap: Heap, bTree: BTreeInterface) : void => {
 
       if (!heap || !bTree) return;
 
@@ -124,8 +127,8 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
       let completed = 0;
       let totalSymTables = symbolTableAddresses.length;
 
-      symbolTableAddresses.forEach((addr) => {
-        lowLevel.SymbolTable(fileObj, addr, false, (symTable) => {
+      symbolTableAddresses.forEach((addr: number) => {
+        lowLevel.SymbolTable(fileObj, addr, false, (symTable: SymbolTable) => {
           symTable.assignName(heap);
 
           // stage 3 proposal for object destructuring isn't supported :(
@@ -137,12 +140,12 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
       
     }
 
-    lowLevel.Heap(fileObj, symbolTableMessage.get("heap_address").toInt(), (heapObj) => {
+    lowLevel.Heap(fileObj, symbolTableMessage.get("heap_address").toInt(), (heapObj: Heap) => {
       heap = heapObj;
       updateSymTables(heap, bTree);
     });
 
-    BTree(fileObj, symbolTableMessage.get("btree_address").toInt(), (bTreeObj) => {
+    BTree(fileObj, symbolTableMessage.get("btree_address").toInt(), (bTreeObj: BTreeInterface) => {
       bTree = bTreeObj;
       updateSymTables(heap, bTree);
     });
@@ -152,4 +155,4 @@ var DataObjects = (fileObj, offset, onReadyCallback) => {
   return dataObj;
 }
 
-module.exports = DataObjects;
+export default DataObjects;

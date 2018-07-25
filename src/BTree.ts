@@ -1,11 +1,13 @@
-const utils = require('./utils.js');
-const consts = require('./consts.js');
-const struct = require('python-struct');
+import utils from './utils';
+import consts from './consts';
+import struct from 'python-struct';
+import { Buffer } from 'buffer/';
+import { BTree, FileObj } from './interfaces';
 
-const BTree = (fileObj, offset, onReady) => {
+const BTree = (fileObj: FileObj, offset: number, onReady) : BTree => {
 
 
-  const readNode = (offset, callback) => {
+  const readNode = (offset: number, callback) : void => {
     utils.fileChunkReader(fileObj._file, [offset, offset + utils.structSize(consts.B_LINK_NODE_V1) - 1], (e) => {
 
       const node = utils.unpackStruct(consts.B_LINK_NODE_V1, Buffer.from(e.target.result), 0);
@@ -36,9 +38,7 @@ const BTree = (fileObj, offset, onReady) => {
     })
   }
 
-  const bTreeObj = {};
-
-  readNode(offset, (rootNode) => {
+  readNode(offset, (rootNode: Map<string, any>) => {
     let nodeLevel = rootNode.get("node_level");
     bTreeObj.rootNode = rootNode;
     bTreeObj.allNodes = {};
@@ -51,17 +51,16 @@ const BTree = (fileObj, offset, onReady) => {
     onReady(bTreeObj);
   });
 
-  bTreeObj.symbolTableAddresses = () => bTreeObj.allNodes[0]
-          .reduce((a, b) => a.concat(...b.get("addresses")), [])
-          .map((long) => long.toInt());
-  
-  
-  // reads the root node, offset is the start of the BTree.
-  // start = root node
-
+  const bTreeObj : BTree = {
+    rootNode: null,
+    allNodes: null,
+    symbolTableAddresses: () : Array<number> => bTreeObj.allNodes[0]
+      .reduce((a, b) => a.concat(...b.get("addresses")), [])
+      .map((long) => long.toInt())
+  };
 
   return bTreeObj;
 
 }
 
-module.exports = BTree;
+export default BTree;

@@ -1,4 +1,5 @@
-const HDF5 = require('./highLevel.js');
+import HDF5 from './highLevel';
+
 var F = null;
 
 document.addEventListener("DOMContentLoaded", function(event) { 
