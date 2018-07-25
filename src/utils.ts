@@ -1,21 +1,15 @@
 import struct from 'python-struct';
 
-interface utils {
-  structSize: object;
-  unpackStruct: object;
-  fileChunkReader: object;
-}
-
 const utils = {
 
-  structSize: (structure: Map<any, any>) => {
+  structSize: (structure: Map<string, string>) : number => {
 
     const fmt = '<' + Array.from(structure.values()).join("");
     return struct.sizeOf(fmt);
 
   },
 
-  unpackStruct: (structure: Map<any, any>, buffer: Uint8Array, loc: number) : Map<any, any> => {
+  unpackStruct: (structure: Map<string, string>, buffer: Uint8Array, loc: number) : Map<string, any> => {
 
     const fmt = '<' + Array.from(structure.values()).join("");
     const values = struct.unpack(fmt, buffer, loc, true);
@@ -25,7 +19,7 @@ const utils = {
   
   },
 
-  fileChunkReader: (file, intervals: [number, number], callback) : void => {
+  fileChunkReader: (file: File, intervals: [number, number], callback) : void => {
     const fileReader = new FileReader();
   
     /*utils.fileReader*/fileReader.onloadend = (e) => {

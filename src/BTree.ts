@@ -2,8 +2,9 @@ import utils from './utils';
 import consts from './consts';
 import struct from 'python-struct';
 import { Buffer } from 'buffer/';
+import { BTree, FileObj } from './interfaces';
 
-const BTree = (fileObj, offset: number, onReady) => {
+const BTree = (fileObj: FileObj, offset: number, onReady) => {
 
 
   const readNode = (offset: number, callback) => {
@@ -50,12 +51,6 @@ const BTree = (fileObj, offset: number, onReady) => {
     onReady(bTreeObj);
   });
 
-  interface BTree {
-    rootNode: object;
-    allNodes: object;
-    symbolTableAddresses: object;
-  }
-
   const bTreeObj : BTree = {
     rootNode: null,
     allNodes: null,
@@ -63,11 +58,6 @@ const BTree = (fileObj, offset: number, onReady) => {
       .reduce((a, b) => a.concat(...b.get("addresses")), [])
       .map((long) => long.toInt())
   };
-
-
-  // reads the root node, offset is the start of the BTree.
-  // start = root node
-
 
   return bTreeObj;
 

@@ -1,32 +1,31 @@
-import utils from './utils';
-import consts from './consts';
-import { Buffer } from 'buffer/';
 import DataObjects from './DataObjects';
 import lowLevel from './lowLevel';
+import { FileObj, HDF5, DataObj, SuperBlock } from './interfaces';
 
-var HDF5 = {};
+const HDF5 = <HDF5>{};
 
-var Group = (name, dataObjects, parent) => {
-  var groupObj = {};
-  groupObj.parent = parent;
-  groupObj.file = parent._file;
-  groupObj.name = name;
+var Group = (name: string, dataObjects: DataObj, parent: FileObj) => {
 
-  groupObj._links = dataObjects.getLinks();
-  groupObj._dataObjects = dataObjects;
-  groupObj.attrs = null;
+  var groupObj = {
+    parent,
+    file: parent._file,
+    name,
+  
+    _links: dataObjects.getLinks(),
+    _dataObjects: dataObjects,
+    attrs: null
+  };
 
   return groupObj;
 }
 
-HDF5.File = function (file) {
-  var fileObj = {};
+HDF5.File = function (file: File) {
 
+  const fileObj = <FileObj>{};
   fileObj._file = file;
-  fileObj.SuperBlock = null;
 
-  fileObj.SuperBlock = lowLevel.SuperBlock(fileObj, 0, (superBlock) => {
-    const dataObjects = DataObjects(fileObj, superBlock._rootSymbolTable.groupOffset.toInt(), (err) => {
+  fileObj.SuperBlock = lowLevel.SuperBlock(fileObj, 0, (superBlock: SuperBlock) => {
+    const dataObjects = DataObjects(fileObj, superBlock._rootSymbolTable.groupOffset, (err) => {
       Group('/', dataObjects, fileObj);
     });
   });
