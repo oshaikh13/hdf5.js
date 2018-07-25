@@ -19,7 +19,7 @@ var Group = (name: string, dataObjects: DataObj, parent: FileObj) => {
   return groupObj;
 }
 
-HDF5.File = function (file: File) {
+HDF5.File = function (file: File) : HDF5 {
 
   const fileObj = <FileObj>{};
   fileObj._file = file;
@@ -30,7 +30,7 @@ HDF5.File = function (file: File) {
     });
   });
 
-  return fileObj;
+  return HDF5;
 }
 
 export default HDF5;

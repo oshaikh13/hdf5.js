@@ -4,14 +4,14 @@ import struct from 'python-struct';
 import { Buffer } from 'buffer/';
 import lowLevel from './lowLevel';
 import BTree from './BTree';
-import { FileObj, DataObj } from './interfaces';
+import { FileObj, DataObj, BTree as BTreeInterface, Heap } from './interfaces';
 
 
-var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) => {
+var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj => {
   
   const dataObj = <DataObj>{};
 
-  const setUpObject = (msgData: Uint8Array, unpackedHeaderObj: Map<string, any>, msgs: Array<Map<string, any>>) => {
+  const setUpObject = (msgData: Uint8Array, unpackedHeaderObj: Map<string, any>, msgs: Array<Map<string, any>>) : void => {
       dataObj.msgs = msgs;
       dataObj.msg_data = msgData;
 
@@ -32,7 +32,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) => {
 
   // TODO: arg version is currently unused.
   // Implement dataobj version x, y, z, etc.
-  const readObjectHeader = (version: number) => {
+  const readObjectHeader = (version: number) : void => {
     utils.fileChunkReader(fileObj._file, 
                           [offset, offset + utils.structSize(consts.OBJECT_HEADER_V1)],
     (e) => {
@@ -72,7 +72,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) => {
 
   // method definitions
 
-  dataObj.parseV1Objects = function (msgBytes: Uint8Array, unpackedHeaderObj: Map<string, any>, callback) {
+  dataObj.parseV1Objects = function (msgBytes: Uint8Array, unpackedHeaderObj: Map<string, any>, callback) : void {
 
     var offset = 0;
     var msgs = [];
@@ -93,7 +93,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) => {
 
   }
 
-  dataObj.findMessageTypes = (msgType) => {
+  dataObj.findMessageTypes = (msgType: number) : Map<string, any>[] => {
     return dataObj.msgs.filter(msg => msg.get("type") === msgType)
   }
 
@@ -106,7 +106,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) => {
     }
   }
 
-  dataObj._getSymbolTableLinks = (symTableMessages: Array<any>, callback) => {
+  dataObj._getSymbolTableLinks = (symTableMessages: Array<any>, callback) : void => {
     
     let heap;
     let bTree;
@@ -117,7 +117,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) => {
     const symbolTableMessage = utils.unpackStruct(consts.SYMBOL_TABLE_MSG, dataObj.msg_data,
       symTableMessages[0].get("offset_to_message"));
 
-    const updateSymTables = (heap, bTree) => {
+    const updateSymTables = (heap: Heap, bTree: BTreeInterface) : void => {
 
       if (!heap || !bTree) return;
 

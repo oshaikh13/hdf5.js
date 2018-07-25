@@ -17,7 +17,7 @@ export interface DataObj {
   // this is the offset passed initially to DataObjects
   offset: number;
   _globl_heaps: object;
-  header: object;
+  header: Map<string, any>;
 
   // cached attributes
   _filter_pipeline: object;
@@ -42,7 +42,7 @@ export interface SuperBlock {
 export interface SymbolTable {
   groupOffset?: number;
   entries: Array<Map<string, any>>;
-  _contents: object;
+  _contents: Map<string, any>;
   assignName: Function;
   getLinks: Function;
 }
@@ -54,5 +54,5 @@ export interface Heap {
 }
 
 export interface HDF5 {
-  File: Function
+  File: Function;
 }

@@ -4,10 +4,10 @@ import struct from 'python-struct';
 import { Buffer } from 'buffer/';
 import { BTree, FileObj } from './interfaces';
 
-const BTree = (fileObj: FileObj, offset: number, onReady) => {
+const BTree = (fileObj: FileObj, offset: number, onReady) : BTree => {
 
 
-  const readNode = (offset: number, callback) => {
+  const readNode = (offset: number, callback) : void => {
     utils.fileChunkReader(fileObj._file, [offset, offset + utils.structSize(consts.B_LINK_NODE_V1) - 1], (e) => {
 
       const node = utils.unpackStruct(consts.B_LINK_NODE_V1, Buffer.from(e.target.result), 0);
@@ -38,7 +38,7 @@ const BTree = (fileObj: FileObj, offset: number, onReady) => {
     })
   }
 
-  readNode(offset, (rootNode) => {
+  readNode(offset, (rootNode: Map<string, any>) => {
     let nodeLevel = rootNode.get("node_level");
     bTreeObj.rootNode = rootNode;
     bTreeObj.allNodes = {};
@@ -54,7 +54,7 @@ const BTree = (fileObj: FileObj, offset: number, onReady) => {
   const bTreeObj : BTree = {
     rootNode: null,
     allNodes: null,
-    symbolTableAddresses: () => bTreeObj.allNodes[0]
+    symbolTableAddresses: () : Array<number> => bTreeObj.allNodes[0]
       .reduce((a, b) => a.concat(...b.get("addresses")), [])
       .map((long) => long.toInt())
   };

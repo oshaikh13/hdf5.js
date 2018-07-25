@@ -7,7 +7,7 @@ import { FileObj, SuperBlock, SymbolTable, Heap } from './interfaces';
                   // UINT   8
 const lowLevel = {
 
-  SuperBlock: (fileObj: FileObj, offset: number, callback) => {
+  SuperBlock: (fileObj: FileObj, offset: number, callback) : SuperBlock => {
 
     var superBlockObject = <SuperBlock>{};
 
@@ -40,7 +40,7 @@ const lowLevel = {
    * rootGroup - is this the rootgroup? - boolean
    *
    */
-  SymbolTable: (fileObj: FileObj, offset: number, rootGroup: boolean, callback) => {
+  SymbolTable: (fileObj: FileObj, offset: number, rootGroup: boolean, callback) : SymbolTable => {
 
     var symTableObj = <SymbolTable>{};
   
@@ -100,7 +100,7 @@ const lowLevel = {
   
   },
 
-  Heap: (fileObj: FileObj, offset: number, onReady) => {
+  Heap: (fileObj: FileObj, offset: number, onReady): Heap => {
 
     const heapObj = <Heap>{};
   
