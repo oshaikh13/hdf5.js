@@ -1,7 +1,8 @@
 import utils from './utils';
 import consts from './consts';
 import { Buffer } from 'buffer/';
-import { FileObj, SuperBlock, SymbolTable, Heap } from './interfaces';
+import { SuperBlock, SymbolTable, Heap } from './interfaces';
+import FileObj from './highLevel';
 
 // Low level API's for HDF5 reader
                   // UINT   8

@@ -4,8 +4,8 @@ import struct from 'python-struct';
 import { Buffer } from 'buffer/';
 import lowLevel from './lowLevel';
 import BTree from './BTree';
-import { FileObj, DataObj, BTree as BTreeInterface, Heap, SymbolTable } from './interfaces';
-
+import { DataObj, BTree as BTreeInterface, Heap, SymbolTable } from './interfaces';
+import FileObj from './highLevel';
 
 var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj => {
   

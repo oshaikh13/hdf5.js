@@ -2,7 +2,8 @@ import utils from './utils';
 import consts from './consts';
 import struct from 'python-struct';
 import { Buffer } from 'buffer/';
-import { BTree, FileObj } from './interfaces';
+import { BTree } from './interfaces';
+import FileObj from './highLevel';
 
 const BTree = (fileObj: FileObj, offset: number, onReady) : BTree => {
 

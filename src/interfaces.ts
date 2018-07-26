@@ -1,9 +1,4 @@
 
-export interface FileObj {
-  _file: File;
-  SuperBlock: SuperBlock;
-}
-
 export interface BTree {
   rootNode: Map<string, any>;
   allNodes: object;
