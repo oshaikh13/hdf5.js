@@ -51,8 +51,8 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
            offset + utils.structSize(consts.OBJECT_HEADER_V1) + unpackedHeaderObj.get("object_header_size") - 1],
         (e) => {
           const msgData = Buffer.from(e.target.result);
-          dataObj.parseV1Objects(msgData, unpackedHeaderObj, (msgs: Array<Map<string, any>>) => {
-            setUpObject(msgData, unpackedHeaderObj, msgs)
+          dataObj.parseV1Objects(msgData, unpackedHeaderObj, (msgs: Array<Map<string, any>>, newMessageData: Uint8Array) => {
+            setUpObject(newMessageData, unpackedHeaderObj, msgs)
           });
         });
 
@@ -75,21 +75,36 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
   dataObj.parseV1Objects = function (msgBytes: Uint8Array, unpackedHeaderObj: Map<string, any>, callback) : void {
 
     var offset = 0;
-    var msgs = [];
-    var completed = 0;
-    for (var i = 0; i < unpackedHeaderObj.get("total_header_messages"); i++) {
+    const msgs = [];
+    const size = unpackedHeaderObj.get('total_header_messages');
+
+    const loadMessages = function(current) {
+      if (current === size - 1) {
+        callback(msgs, msgBytes);
+        return;
+      }
+
       const currentMsg = utils.unpackStruct(consts.HEADER_MSG_INFO_V1, msgBytes, offset);
       currentMsg.set("offset_to_message", offset + 8);
+
       if (currentMsg.get("type") === consts.OBJECT_CONTINUATION_MSG_TYPE) {
         var unpacked = struct.unpack('<QQ', msgBytes, offset + 8);
-        throw new Error("unimplemented");
+        utils.fileChunkReader(fileObj._file, [unpacked[0].toInt(), unpacked[0].toInt() + unpacked[1].toInt() - 1], (e) => {
+          offset += 8 + currentMsg.get('size');
+          msgs[current] = currentMsg;
+          msgBytes = Buffer.concat([msgBytes, Buffer.from(e.target.result)]);
+          loadMessages(++current);
+        })
       } else {
-        msgs.push(currentMsg);
-        offset += 8 + currentMsg.size;
+        msgs[current] = currentMsg;
+        offset += 8 + currentMsg.get('size');
+        loadMessages(++current);
+
       }
+      
     }
 
-    callback(msgs);
+    loadMessages(0);
 
   }
 
