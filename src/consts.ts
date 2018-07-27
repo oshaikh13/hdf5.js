@@ -76,6 +76,8 @@ const consts = {
 
   OBJECT_CONTINUATION_MSG_TYPE: 0x0010,
   SYMBOL_TABLE_MSG_TYPE: 0x0011,
+  ATTRIBUTE_MSG_TYPE: 0x000C,
+  
   
   B_LINK_NODE_V1: new Map([
     ['signature', '4s'],

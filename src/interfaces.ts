@@ -23,6 +23,8 @@ export interface DataObj {
 
   parseV1Objects: Function;
   findMessageTypes: Function;
+  getAttributes: Function;
+  unpackAttr: Function;
   getLinks: Function;
   _getSymbolTableLinks: Function;
 

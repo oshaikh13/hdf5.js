@@ -97,13 +97,33 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     return dataObj.msgs.filter(msg => msg.get("type") === msgType)
   }
 
-  dataObj.getLinks = () => {
+  dataObj.getLinks = (callback) => {
     const symTableMessages = dataObj.findMessageTypes(consts.SYMBOL_TABLE_MSG_TYPE)
     if (symTableMessages.length) {
       dataObj._getSymbolTableLinks(symTableMessages, (links) => {
-        console.log(links);
+        callback(links);
       });
     }
+  }
+
+  dataObj.getAttributes = () => {
+    const attrs = {};
+    const attrMsgs = dataObj.findMessageTypes(consts.ATTRIBUTE_MSG_TYPE);
+    attrMsgs.forEach(msg => {
+      const offset = msg.get("offset");
+      const { name, value } = dataObj.unpackAttr(offset);
+      attrs[name] = value;
+    });
+    return attrs;
+  }
+
+  dataObj.unpackAttr = (offset) => {
+    const version = struct.unpack_from('<B', dataObj.msg_data, offset)[0];
+
+    return {
+      name: "debug",
+      value: version
+    };
   }
 
   dataObj._getSymbolTableLinks = (symTableMessages: Array<Map<string, any>>, callback) : void => {
