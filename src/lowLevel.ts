@@ -12,26 +12,35 @@ const lowLevel = {
 
     var superBlockObject = <SuperBlock>{};
 
-    utils.fileChunkReader(fileObj._file, [offset, offset + utils.structSize(consts.SUPERBLOCK_V0) - 1], (e) => {
+    utils.fileChunkReader(fileObj._file, [offset + 8, offset + 8], (e) => {
 
-      const superBlockBuffer = Buffer.from(e.target.result);
-      superBlockObject.contents = utils.unpackStruct(consts.SUPERBLOCK_V0, superBlockBuffer, offset);
+      const versionHint = Buffer.from(e.target.result)[0];
+      console.log ("SUPERBLOCK V" + versionHint);
 
-      if (consts.VALID_FORMAT_SIGNATURE != superBlockObject.contents.get('format_signature')) {
-        throw new Error("Invalid HDF5 file provided!");
-      }
-    
-      if (superBlockObject.contents.get('offset_size') != 8 || superBlockObject.contents.get('length_size') != 8) {
-        throw new Error("File uses non 64-bit addressing.");
-      }
-    
-      superBlockObject.endOfBlock = offset + utils.structSize(consts.SUPERBLOCK_V0);
-      superBlockObject._rootSymbolTable = lowLevel.SymbolTable(fileObj, 
-        superBlockObject.endOfBlock, true, () => {
-          callback(superBlockObject);  
-      });
+      utils.fileChunkReader(fileObj._file, [offset, offset + utils.structSize(consts.SUPERBLOCK_V0) - 1], (e) => {
+
+        const superBlockBuffer = Buffer.from(e.target.result);
+        superBlockObject.contents = utils.unpackStruct(consts.SUPERBLOCK_V0, superBlockBuffer, offset);
+  
+        if (consts.VALID_FORMAT_SIGNATURE != superBlockObject.contents.get('format_signature')) {
+          throw new Error("Invalid HDF5 file provided!");
+        }
+      
+        if (superBlockObject.contents.get('offset_size') != 8 || superBlockObject.contents.get('length_size') != 8) {
+          throw new Error("File uses non 64-bit addressing.");
+        }
+      
+        superBlockObject.endOfBlock = offset + utils.structSize(consts.SUPERBLOCK_V0);
+        superBlockObject._rootSymbolTable = lowLevel.SymbolTable(fileObj, 
+          superBlockObject.endOfBlock, true, () => {
+            callback(superBlockObject);  
+        });
+  
+      }); 
 
     });
+
+
 
     return superBlockObject;
   },

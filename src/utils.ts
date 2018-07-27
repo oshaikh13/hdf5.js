@@ -34,7 +34,7 @@ const utils = {
     fileReader.readAsArrayBuffer(selectedBlob);
     
   }
-
+  
 };
 
 export default utils;
