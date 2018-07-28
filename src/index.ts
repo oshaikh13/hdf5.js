@@ -31,6 +31,8 @@ function onDrop(e) {
     return;
   }
 
-  F = new HDF5(files[0]);
+  F = new HDF5(files[0], () => {
+    F.attrs();
+  });
 
 };

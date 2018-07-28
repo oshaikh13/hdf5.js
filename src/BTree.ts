@@ -10,7 +10,6 @@ const BTree = (fileObj: FileObj, offset: number, onReady) : BTree => {
 
   const readNode = (offset: number, callback) : void => {
     utils.fileChunkReader(fileObj._file, [offset, offset + utils.structSize(consts.B_LINK_NODE_V1) - 1], (e) => {
-
       const node = utils.unpackStruct(consts.B_LINK_NODE_V1, Buffer.from(e.target.result), 0);
       const startKeyAddressOffset = offset + utils.structSize(consts.B_LINK_NODE_V1);
       const endKeyAddressOffset = startKeyAddressOffset + ((node.get("entries_used") + 1) * 16) - 1;
@@ -44,11 +43,9 @@ const BTree = (fileObj: FileObj, offset: number, onReady) : BTree => {
     bTreeObj.rootNode = rootNode;
     bTreeObj.allNodes = {};
     bTreeObj.allNodes[nodeLevel] = [bTreeObj.rootNode];
-
     while (nodeLevel != 0) {
       throw new Error("unimplemented")
     }
-
     onReady(bTreeObj);
   });
 

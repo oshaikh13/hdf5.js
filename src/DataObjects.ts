@@ -79,7 +79,8 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     const size = unpackedHeaderObj.get('total_header_messages');
 
     const loadMessages = function(current) {
-      if (current === size - 1) {
+
+      if (current === size) {
         callback(msgs, msgBytes);
         return;
       }
@@ -132,12 +133,10 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     return attrs;
   }
 
-  dataObj.unpackAttr = (offset) => {
-    const version = struct.unpack_from('<B', dataObj.msg_data, offset)[0];
-
+  dataObj.unpackAttr = (offset: number) => {
     return {
       name: "debug",
-      value: version
+      value: 0
     };
   }
 
@@ -161,11 +160,10 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
       let links = {};
       let completed = 0;
       let totalSymTables = symbolTableAddresses.length;
-
+      if (!totalSymTables) callback(links);
       symbolTableAddresses.forEach((addr: number) => {
         lowLevel.SymbolTable(fileObj, addr, false, (symTable: SymbolTable) => {
           symTable.assignName(heap);
-
           // stage 3 proposal for object destructuring isn't supported :(
           links = Object.assign(symTable.getLinks(), links);
           

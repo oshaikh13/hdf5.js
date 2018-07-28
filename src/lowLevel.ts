@@ -113,7 +113,6 @@ const lowLevel = {
   Heap: (fileObj: FileObj, offset: number, onReady): Heap => {
 
     const heapObj = <Heap>{};
-  
     utils.fileChunkReader(fileObj._file, [offset, offset + utils.structSize(consts.LOCAL_HEAP) - 1], (e) => {
       const fileBuffer = Buffer.from(e.target.result);
       const localHeap = utils.unpackStruct(consts.LOCAL_HEAP, fileBuffer, 0);

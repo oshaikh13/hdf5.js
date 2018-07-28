@@ -26,6 +26,7 @@ class Group {
     this.file = parent._file;
     dataObjects.getLinks((links) => {
       this._links = links;
+      console.log(links);
       callback();
     });
   }
@@ -85,17 +86,19 @@ class HDF5File extends Group {
   SuperBlock: SuperBlock;
   _file: File;
 
-  constructor(file: File) {
+  constructor(file: File, callback) {
     super();
     this._file = file;
     this.SuperBlock = lowLevel.SuperBlock(this, 0, (superBlock: SuperBlock) => {
       const dataObjects = DataObjects(this, superBlock._rootSymbolTable.groupOffset, (err) => {
         this.setupGroup('/', dataObjects, this, () => {
-
+          callback();
         });
       });
     });
   }
+
+
 
   _getObjectByAddress(objAddress: number) {
     if (this._dataObjects.offset === objAddress) return this;
