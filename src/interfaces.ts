@@ -26,6 +26,7 @@ export interface DataObj {
   getAttributes: Function;
   unpackAttr: Function;
   getLinks: Function;
+  determineDataShape: Function;
   _getSymbolTableLinks: Function;
 
 }

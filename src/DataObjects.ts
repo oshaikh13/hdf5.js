@@ -6,7 +6,6 @@ import lowLevel from './lowLevel';
 import BTree from './BTree';
 import { DataObj, BTree as BTreeInterface, Heap, SymbolTable } from './interfaces';
 import FileObj from './highLevel';
-import DataTypeMessage from './DatatypeMessage';
 import DatatypeMessage from './DatatypeMessage';
 
 var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj => {
@@ -150,12 +149,33 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     const name = dataObj.msg_data.slice(offset, offset + nameSize).toString();
     offset += utils.paddedSize(nameSize, paddingMultiple);
 
-    const dataType = new DataTypeMessage(dataObj.msg_data, offset);
+    const dataType = new DatatypeMessage(dataObj.msg_data, offset);
+    offset += utils.paddedSize(currentAttrs.get("datatype_size"), paddingMultiple);
+
+    const shape = dataObj.determineDataShape(dataObj.msg_data, offset);
+    console.log(shape);
 
     return {
       name: "debug",
       value: 0
     };
+  }
+
+  dataObj.determineDataShape = (buffer: Uint8Array, offset: number) => {
+    const version = struct.unpack('<B', buffer, offset)[0];
+    let header;
+    if (version == 1) {
+      header = utils.unpackStruct(consts.DATASPACE_MSG_HEADER_V1, buffer, offset)
+      offset += utils.structSize(consts.DATASPACE_MSG_HEADER_V1);
+    } else if (version == 2) {
+      header = utils.unpackStruct(consts.DATASPACE_MSG_HEADER_V2, buffer, offset)
+      offset += utils.structSize(consts.DATASPACE_MSG_HEADER_V2)
+    } else throw new Error('unknown dataspace message version');
+
+    const ndims = header.get('dimensionality');
+    const dimSizes = struct.unpack('<' + 'Q'.repeat(ndims), buffer, offset)
+
+    return dimSizes
   }
 
   dataObj._getSymbolTableLinks = (symTableMessages: Array<Map<string, any>>, callback) : void => {

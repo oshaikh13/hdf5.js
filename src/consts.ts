@@ -131,6 +131,21 @@ const consts = {
   DATATYPE_VARIABLE_LENGTH: 9,
   DATATYPE_ARRAY: 10,
 
+  DATASPACE_MSG_HEADER_V1: new Map([
+    ['version', 'B'],
+    ['dimensionality', 'B'],
+    ['flags', 'B'],
+    ['reserved_0', 'B'],
+    ['reserved_1', 'I'],
+  ]),
+
+  DATASPACE_MSG_HEADER_V2: new Map([
+    ['version', 'B'],
+    ['dimensionality', 'B'],
+    ['flags', 'B'],
+    ['type', 'B'],
+  ]),
+
 };
 
 
