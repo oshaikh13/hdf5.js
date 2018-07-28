@@ -6,6 +6,8 @@ import lowLevel from './lowLevel';
 import BTree from './BTree';
 import { DataObj, BTree as BTreeInterface, Heap, SymbolTable } from './interfaces';
 import FileObj from './highLevel';
+import DataTypeMessage from './DatatypeMessage';
+import DatatypeMessage from './DatatypeMessage';
 
 var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj => {
   
@@ -126,7 +128,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     const attrs = {};
     const attrMsgs = dataObj.findMessageTypes(consts.ATTRIBUTE_MSG_TYPE);
     attrMsgs.forEach(msg => {
-      const offset = msg.get("offset");
+      const offset = msg.get("offset_to_message");
       const { name, value } = dataObj.unpackAttr(offset);
       attrs[name] = value;
     });
@@ -134,6 +136,22 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
   }
 
   dataObj.unpackAttr = (offset: number) => {
+    const version = struct.unpack('<B', dataObj.msg_data, offset)[0];
+    let currentAttrs;
+    let paddingMultiple;
+
+    if (version === 1) {
+      currentAttrs = utils.unpackStruct(consts.ATTR_MSG_HEADER_V1, dataObj.msg_data, offset);
+      offset += utils.structSize(consts.ATTR_MSG_HEADER_V1);
+      paddingMultiple = 8;
+    } else throw new Error("unimplemented");
+
+    const nameSize = currentAttrs.get("name_size");
+    const name = dataObj.msg_data.slice(offset, offset + nameSize).toString();
+    offset += utils.paddedSize(nameSize, paddingMultiple);
+
+    const dataType = new DataTypeMessage(dataObj.msg_data, offset);
+
     return {
       name: "debug",
       value: 0

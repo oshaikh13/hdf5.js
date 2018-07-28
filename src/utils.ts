@@ -33,8 +33,11 @@ const utils = {
     // utils.fileReader.readAsArrayBuffer(selectedBlob);
     fileReader.readAsArrayBuffer(selectedBlob);
     
+  },
+
+  paddedSize: (size: number, paddingMultiple = 8) : number => {
+    return Math.floor(Math.ceil(size / paddingMultiple) * paddingMultiple);
   }
-  
 };
 
 export default utils;
