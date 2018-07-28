@@ -28,6 +28,8 @@ export interface DataObj {
   getLinks: Function;
   determineDataShape: Function;
   _getSymbolTableLinks: Function;
+  _attrValue: Function;
+  _vlenSizeAndData: Function;
 
 }
 

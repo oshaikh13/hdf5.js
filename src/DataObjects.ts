@@ -149,11 +149,14 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     const name = dataObj.msg_data.slice(offset, offset + nameSize).toString();
     offset += utils.paddedSize(nameSize, paddingMultiple);
 
-    const dataType = new DatatypeMessage(dataObj.msg_data, offset);
+    const dataType = new DatatypeMessage(dataObj.msg_data, offset).datatype;
     offset += utils.paddedSize(currentAttrs.get("datatype_size"), paddingMultiple);
 
     const shape = dataObj.determineDataShape(dataObj.msg_data, offset);
-    console.log(shape);
+    const items = shape.reduce((a, b) => a * b, 1);
+    offset += utils.paddedSize(currentAttrs.get('dataspace_size'), paddingMultiple);
+
+    console.log(dataType, shape, items);
 
     return {
       name: "debug",
@@ -161,7 +164,26 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     };
   }
 
-  dataObj.determineDataShape = (buffer: Uint8Array, offset: number) => {
+  dataObj._vlenSizeAndData = (buffer: Uint8Array, offset: number) => {
+
+  }
+
+  dataObj._attrValue = (datatype, buffer: Uint8Array, count: number, offset: number) => {
+    let value;
+    if (datatype instanceof Array) {
+      const dataTypeClass = datatype[0];
+      for (var i = 0; i < count; i++) {
+        if (dataTypeClass === "VLEN_STRING") {
+          const character_set = datatype[2];
+
+        }
+      }
+
+    }
+
+  }
+
+  dataObj.determineDataShape = (buffer: Uint8Array, offset: number) : Array<any> => {
     const version = struct.unpack('<B', buffer, offset)[0];
     let header;
     if (version == 1) {
