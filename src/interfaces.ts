@@ -11,7 +11,7 @@ export interface DataObj {
 
   // this is the offset passed initially to DataObjects
   offset: number;
-  _globl_heaps: object;
+  _global_heaps: object;
   header: Map<string, any>;
 
   // cached attributes

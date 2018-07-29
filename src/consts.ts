@@ -146,6 +146,25 @@ const consts = {
     ['type', 'B'],
   ]),
 
+  GLOBAL_HEAP_ID: new Map([
+    ['collection_address', 'Q'],
+    ['object_index', 'I'],
+  ]),
+
+  GLOBAL_HEAP_HEADER: new Map([
+    ['signature', '4s'],
+    ['version', 'B'],
+    ['reserved', '3s'],
+    ['collection_size', 'Q'],
+  ]),
+
+  GLOBAL_HEAP_OBJECT: new Map([
+    ['object_index', 'H'],
+    ['reference_count', 'H'],
+    ['reserved', 'I'],
+    ['object_size', 'Q']    
+  ])
+
 };
 
 

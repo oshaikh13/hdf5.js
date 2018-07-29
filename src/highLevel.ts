@@ -1,14 +1,7 @@
 import DataObjects from './DataObjects';
 import lowLevel from './lowLevel';
 import { DataObj, SuperBlock } from './interfaces';
-
-class Reference {
-  addressOfReference: number;
-  constructor(addressOfReference: number) { this.addressOfReference = addressOfReference };
-  isEmpty () : boolean {
-    return !!this.addressOfReference;
-  }
-}
+import { Reference } from './utils';
 
 class Group {
   parent: HDF5File;

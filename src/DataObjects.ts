@@ -1,8 +1,8 @@
-import utils from './utils';
+import utils, { Reference } from './utils';
 import consts from './consts';
 import struct from 'python-struct';
 import { Buffer } from 'buffer/';
-import lowLevel from './lowLevel';
+import lowLevel, { GlobalHeap } from './lowLevel';
 import BTree from './BTree';
 import { DataObj, BTree as BTreeInterface, Heap, SymbolTable } from './interfaces';
 import FileObj from './highLevel';
@@ -18,7 +18,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
 
       // this is the offset passed initially to DataObjects
       dataObj.offset = offset;
-      dataObj._globl_heaps = {};
+      dataObj._global_heaps = {};
       dataObj.header = unpackedHeaderObj;
 
       // cached attributes
@@ -156,7 +156,9 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     const items = shape.reduce((a, b) => a * b, 1);
     offset += utils.paddedSize(currentAttrs.get('dataspace_size'), paddingMultiple);
 
-    console.log(dataType, shape, items);
+    dataObj._attrValue(dataType, dataObj.msg_data, items, offset, (value) => {
+      console.log(value);
+    })
 
     return {
       name: "debug",
@@ -164,22 +166,67 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     };
   }
 
-  dataObj._vlenSizeAndData = (buffer: Uint8Array, offset: number) => {
+  dataObj._vlenSizeAndData = (buffer: Uint8Array, offset: number, currentIdx: number, callback) => {
+
+    const vlenSize = struct.unpack('<I', buffer, offset)[0]
+
+    const gheapId = utils.unpackStruct(consts.GLOBAL_HEAP_ID, buffer, offset + 4);
+
+    const loadVlenSizeAndDataFromHeap = (gheapAddress) => {
+      const gheap : GlobalHeap = dataObj._global_heaps[gheapAddress]
+      const vlenData = gheap.objects().get(gheapId.get('object_index'));
+      callback(currentIdx, {vlenSize, vlenData});
+    }
+
+    const gheapAddress = gheapId.get('collection_address');
+    if (!dataObj._global_heaps[gheapAddress]) {
+      const gheap = new GlobalHeap(fileObj, offset, () => {
+        dataObj._global_heaps[gheapAddress] = gheap;
+        loadVlenSizeAndDataFromHeap(gheapAddress);
+      })
+    }
 
   }
 
-  dataObj._attrValue = (datatype, buffer: Uint8Array, count: number, offset: number) => {
-    let value;
+  dataObj._attrValue = (datatype, buffer: Uint8Array, count: number, offset: number, callback) => {
+    const value = [];
+    let completed = 0;
     if (datatype instanceof Array) {
+
+      const checkComplete = () => {
+        if (++completed === count) callback(value);
+      }
+
       const dataTypeClass = datatype[0];
       for (var i = 0; i < count; i++) {
         if (dataTypeClass === "VLEN_STRING") {
-          const character_set = datatype[2];
-
-        }
+          const character_set = datatype[1];
+          dataObj._vlenSizeAndData(buffer, offset, i, (currentIdx, vlenInfo) => {
+            if (character_set === 0) value[currentIdx] = vlenInfo.vlenData;
+            else value[currentIdx] = vlenInfo.vlenData.toString();
+            checkComplete();
+          });
+          offset += 16;
+        } else if (dataTypeClass === "REFERENCE") {
+          const address = struct.unpack('<Q', buffer, offset)[0]
+          value[i] = new Reference(address);
+          offset += 8;
+          checkComplete();
+        } else if (dataTypeClass === "VLEN_SEQUENCE") {
+          const baseType = datatype[1]
+          dataObj._vlenSizeAndData(buffer, offset, i, (currentIdx, vlenInfo) => {
+            dataObj._attrValue(baseType, vlenInfo.vlenData, vlenInfo.vlenSize, 0, (attrValue) => {
+              value[currentIdx] = attrValue;
+              checkComplete();
+            })
+          })
+          offset += 16
+        } else throw new Error("unimplemented");
       }
 
-    }
+    } else {
+      callback("unimplemented " + datatype);
+    } 
 
   }
 

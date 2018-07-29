@@ -40,4 +40,12 @@ const utils = {
   }
 };
 
+export class Reference {
+  addressOfReference: number;
+  constructor(addressOfReference: number) { this.addressOfReference = addressOfReference };
+  isEmpty () : boolean {
+    return !!this.addressOfReference;
+  }
+}
+
 export default utils;

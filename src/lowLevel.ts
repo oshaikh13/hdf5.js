@@ -3,6 +3,7 @@ import consts from './consts';
 import { Buffer } from 'buffer/';
 import { SuperBlock, SymbolTable, Heap } from './interfaces';
 import FileObj from './highLevel';
+import struct from 'python-struct';
 
 // Low level API's for HDF5 reader
                   // UINT   8
@@ -138,6 +139,55 @@ const lowLevel = {
     return heapObj;
   }
 
+}
+
+export class GlobalHeap {
+
+  _heapHeader: Map<string, any>;
+  _objects: null | Map<number, any>;
+  heapData: Uint8Array;
+
+  constructor(fileObj: FileObj, offset: number, onReady: Function) {
+    // fh.seek(offset)
+    // const header = _unpack_struct_from_file(GLOBAL_HEAP_HEADER, fh)
+    utils.fileChunkReader(fileObj._file, [offset, 
+                                          offset + utils.structSize(consts.GLOBAL_HEAP_HEADER) - 1], (e) => {
+      const fileBuffer = Buffer.from(e.target.result);
+      const header = utils.unpackStruct(consts.GLOBAL_HEAP_HEADER, fileBuffer, 0);
+      this._heapHeader = header;
+
+      const heapDataSize = header.get('collection_size') - utils.structSize(consts.GLOBAL_HEAP_HEADER);
+      const heapDataStartOffset = offset + utils.structSize(consts.GLOBAL_HEAP_HEADER);
+      const heapDataEndOffset = heapDataStartOffset + heapDataSize - 1;
+
+      this._objects = null;
+
+      utils.fileChunkReader(fileObj._file, [heapDataStartOffset, heapDataEndOffset], (e) => {
+        this.heapData = Buffer.from(e.target.result);
+        onReady();
+      })
+    })
+
+  }
+
+  objects () {
+    if (this._objects === null) {
+      this._objects = new Map();
+      let offset = 0;
+      while (offset < this.heapData.length) {
+        const info = utils.unpackStruct(consts.GLOBAL_HEAP_OBJECT, this.heapData, offset);
+        if (info.get('object_index') == 0) {
+          break;
+        }
+        offset += utils.structSize(consts.GLOBAL_HEAP_OBJECT);
+        const fmt = '<' + (info.get('object_size')) + 's';
+        const objData = struct.unpack(fmt, this.heapData, offset)[0];
+        this._objects.set(info.get('object_index'), objData);
+        offset += utils.paddedSize(info.get('object_size'));
+      }
+    }
+    return this._objects;
+  }
 }
 
 export default lowLevel;
