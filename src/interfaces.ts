@@ -20,6 +20,8 @@ export interface DataObj {
   _chunks: object;
   _chunk_dims: object;
   _chunk_address: object;
+  _gheapLoadedStatus: number;
+  _gheapQueue: Array<any>;
 
   parseV1Objects: Function;
   findMessageTypes: Function;

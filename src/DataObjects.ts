@@ -165,29 +165,44 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     };
   }
 
+  dataObj._gheapLoadedStatus = 0;
+  dataObj._gheapQueue = [];
+
   dataObj._vlenSizeAndData = (buffer: Uint8Array, offset: number, currentIdx: number, callback) => {
-    const vlenSize = struct.unpack('<I', buffer, offset)[0]
 
-    const gheapId = utils.unpackStruct(consts.GLOBAL_HEAP_ID, buffer, offset + 4);
+    if (dataObj._gheapLoadedStatus == 0) {
+      dataObj._gheapLoadedStatus = 1;
+      console.log(offset, currentIdx);
+      const vlenSize = struct.unpack('<I', buffer, offset)[0]
 
-    const loadVlenSizeAndDataFromHeap = (gheapAddress) => {
-      const gheap : GlobalHeap = dataObj._global_heaps[gheapAddress];
-      const vlenData = gheap.objects().get(gheapId.get('object_index'));
-      callback(currentIdx, {vlenSize, vlenData});
+      const gheapId = utils.unpackStruct(consts.GLOBAL_HEAP_ID, buffer, offset + 4);
+      
+      const loadVlenSizeAndDataFromHeap = (gheapAddress) => {
+        const gheap : GlobalHeap = dataObj._global_heaps[gheapAddress];
+        const vlenData = gheap.objects().get(gheapId.get('object_index'));
+        callback(currentIdx, {vlenSize, vlenData});
+      }
+  
+      const gheapAddress = gheapId.get('collection_address').toInt();
+      console.log(gheapAddress + " ADDR");
+      
+      if (!dataObj._global_heaps[gheapAddress]) {
+        const gheap = new GlobalHeap(fileObj, gheapAddress, () => {
+          console.log(gheap);
+          dataObj._global_heaps[gheapAddress] = gheap;
+          loadVlenSizeAndDataFromHeap(gheapAddress);
+        })
+      } else loadVlenSizeAndDataFromHeap(gheapAddress);
+  
+    } else if (dataObj._gheapLoadedStatus == 1) {
+      dataObj._gheapQueue.push(arguments);
+    } else if (dataObj._gheapLoadedStatus == 2) {
+      dataObj._gheapLoadedStatus = 0;
+      dataObj._gheapQueue.forEach(argumentList => { dataObj._vlenSizeAndData.apply(dataObj, argumentList); })
     }
-
-    const gheapAddress = gheapId.get('collection_address').toInt();
-    console.log(gheapAddress + " ADDR");
-    
-    if (!dataObj._global_heaps[gheapAddress]) {
-      const gheap = new GlobalHeap(fileObj, offset, () => {
-        console.log(gheap);
-        dataObj._global_heaps[gheapAddress] = gheap;
-        loadVlenSizeAndDataFromHeap(gheapAddress);
-      })
-    } else loadVlenSizeAndDataFromHeap(gheapAddress);
-
   }
+
+
 
   dataObj._attrValue = (datatype, buffer: Uint8Array, count: number, offset: number, callback) => {
     const value = [];
