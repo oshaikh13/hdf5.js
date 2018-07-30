@@ -155,9 +155,8 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     const shape = dataObj.determineDataShape(dataObj.msg_data, offset);
     const items = shape.reduce((a, b) => a * b, 1);
     offset += utils.paddedSize(currentAttrs.get('dataspace_size'), paddingMultiple);
-
     dataObj._attrValue(dataType, dataObj.msg_data, items, offset, (value) => {
-      console.log(value);
+      // console.log(name, value);
     })
 
     return {
@@ -167,52 +166,62 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
   }
 
   dataObj._vlenSizeAndData = (buffer: Uint8Array, offset: number, currentIdx: number, callback) => {
-
     const vlenSize = struct.unpack('<I', buffer, offset)[0]
 
     const gheapId = utils.unpackStruct(consts.GLOBAL_HEAP_ID, buffer, offset + 4);
 
     const loadVlenSizeAndDataFromHeap = (gheapAddress) => {
-      const gheap : GlobalHeap = dataObj._global_heaps[gheapAddress]
+      const gheap : GlobalHeap = dataObj._global_heaps[gheapAddress];
       const vlenData = gheap.objects().get(gheapId.get('object_index'));
       callback(currentIdx, {vlenSize, vlenData});
     }
 
-    const gheapAddress = gheapId.get('collection_address');
+    const gheapAddress = gheapId.get('collection_address').toInt();
+    console.log(gheapAddress + " ADDR");
+    
     if (!dataObj._global_heaps[gheapAddress]) {
       const gheap = new GlobalHeap(fileObj, offset, () => {
+        console.log(gheap);
         dataObj._global_heaps[gheapAddress] = gheap;
         loadVlenSizeAndDataFromHeap(gheapAddress);
       })
-    }
+    } else loadVlenSizeAndDataFromHeap(gheapAddress);
 
   }
 
   dataObj._attrValue = (datatype, buffer: Uint8Array, count: number, offset: number, callback) => {
     const value = [];
     let completed = 0;
-    if (datatype instanceof Array) {
-
+    if (datatype instanceof Array && datatype.length >= 2) {
+      console.log (datatype);
       const checkComplete = () => {
-        if (++completed === count) callback(value);
+        
+        if (++completed === count){
+          callback(value);
+        } 
       }
 
       const dataTypeClass = datatype[0];
       for (var i = 0; i < count; i++) {
         if (dataTypeClass === "VLEN_STRING") {
-          const character_set = datatype[1];
+          const character_set = datatype[2];
+          console.log("READING VLEN_STRING: " + offset);
           dataObj._vlenSizeAndData(buffer, offset, i, (currentIdx, vlenInfo) => {
+            console.log("HAI HO");
+            console.log(currentIdx, vlenInfo);
             if (character_set === 0) value[currentIdx] = vlenInfo.vlenData;
             else value[currentIdx] = vlenInfo.vlenData.toString();
             checkComplete();
           });
           offset += 16;
         } else if (dataTypeClass === "REFERENCE") {
+          console.log("READING REFERENCE: " + offset);
           const address = struct.unpack('<Q', buffer, offset)[0]
           value[i] = new Reference(address);
           offset += 8;
           checkComplete();
         } else if (dataTypeClass === "VLEN_SEQUENCE") {
+          console.log("READING VLEN_SEQ: " + offset);
           const baseType = datatype[1]
           dataObj._vlenSizeAndData(buffer, offset, i, (currentIdx, vlenInfo) => {
             dataObj._attrValue(baseType, vlenInfo.vlenData, vlenInfo.vlenSize, 0, (attrValue) => {
@@ -225,7 +234,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
       }
 
     } else {
-      callback("unimplemented " + datatype);
+      callback(struct.unpack(datatype, buffer, offset));
     } 
 
   }

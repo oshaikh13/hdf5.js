@@ -41,16 +41,9 @@ const lowLevel = {
 
     });
 
-
-
     return superBlockObject;
   },
 
-  /**
-   * A SymbolTable loader.
-   * rootGroup - is this the rootgroup? - boolean
-   *
-   */
   SymbolTable: (fileObj: FileObj, offset: number, rootGroup: boolean, callback) : SymbolTable => {
 
     var symTableObj = <SymbolTable>{};
@@ -180,10 +173,11 @@ export class GlobalHeap {
           break;
         }
         offset += utils.structSize(consts.GLOBAL_HEAP_OBJECT);
-        const fmt = '<' + (info.get('object_size')) + 's';
+        const fmt = '<' + (info.get('object_size').toInt()) + 's';
         const objData = struct.unpack(fmt, this.heapData, offset)[0];
         this._objects.set(info.get('object_index'), objData);
-        offset += utils.paddedSize(info.get('object_size'));
+
+        offset += utils.paddedSize(info.get('object_size').toInt());
       }
     }
     return this._objects;
