@@ -66,11 +66,15 @@ class Group {
     return null;
   }
 
-  attrs () : object {
+  attrs (callback) {
     if (this._attrs == null) {
-      this._attrs = this._dataObjects.getAttributes();
-      return this._attrs;
-    } else return this._attrs;
+      this._dataObjects.getAttributes((attrs) => {
+        console.log("huh");
+        this._attrs = attrs;
+        callback(attrs);
+      });
+      
+    } else callback(this._attrs);
   }
 
 }

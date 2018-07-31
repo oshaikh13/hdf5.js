@@ -123,18 +123,25 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     }
   }
 
-  dataObj.getAttributes = () => {
+  dataObj.getAttributes = (callback) => {
     const attrs = {};
+    let completed = 0;
     const attrMsgs = dataObj.findMessageTypes(consts.ATTRIBUTE_MSG_TYPE);
     attrMsgs.forEach(msg => {
       const offset = msg.get("offset_to_message");
-      const { name, value } = dataObj.unpackAttr(offset);
-      attrs[name] = value;
+      dataObj.unpackAttr(offset, function(attrData) {
+        const {name, value} = attrData;
+        attrs[name] = value;
+        console.log(attrData);
+        console.log(completed, attrMsgs.length);
+        if (++completed === attrMsgs.length) callback(attrs);
+      });
+
     });
     return attrs;
   }
 
-  dataObj.unpackAttr = (offset: number) => {
+  dataObj.unpackAttr = (offset: number, callback) => {
     const version = struct.unpack('<B', dataObj.msg_data, offset)[0];
     let currentAttrs;
     let paddingMultiple;
@@ -156,13 +163,9 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     const items = shape.reduce((a, b) => a * b, 1);
     offset += utils.paddedSize(currentAttrs.get('dataspace_size'), paddingMultiple);
     dataObj._attrValue(dataType, dataObj.msg_data, items, offset, (value) => {
-      // console.log(name, value);
+      callback({name, value});
     })
 
-    return {
-      name: "debug",
-      value: 0
-    };
   }
 
   dataObj._gheapLoadedStatus = 0;
@@ -172,7 +175,6 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
 
     if (dataObj._gheapLoadedStatus == 0) {
       dataObj._gheapLoadedStatus = 1;
-      console.log(offset, currentIdx);
       const vlenSize = struct.unpack('<I', buffer, offset)[0]
 
       const gheapId = utils.unpackStruct(consts.GLOBAL_HEAP_ID, buffer, offset + 4);
@@ -184,11 +186,9 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
       }
   
       const gheapAddress = gheapId.get('collection_address').toInt();
-      console.log(gheapAddress + " ADDR");
       
       if (!dataObj._global_heaps[gheapAddress]) {
         const gheap = new GlobalHeap(fileObj, gheapAddress, () => {
-          console.log(gheap);
           dataObj._global_heaps[gheapAddress] = gheap;
           loadVlenSizeAndDataFromHeap(gheapAddress);
         })
@@ -208,7 +208,6 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     const value = [];
     let completed = 0;
     if (datatype instanceof Array && datatype.length >= 2) {
-      console.log (datatype);
       const checkComplete = () => {
         
         if (++completed === count){
@@ -220,23 +219,18 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
       for (var i = 0; i < count; i++) {
         if (dataTypeClass === "VLEN_STRING") {
           const character_set = datatype[2];
-          console.log("READING VLEN_STRING: " + offset);
           dataObj._vlenSizeAndData(buffer, offset, i, (currentIdx, vlenInfo) => {
-            console.log("HAI HO");
-            console.log(currentIdx, vlenInfo);
             if (character_set === 0) value[currentIdx] = vlenInfo.vlenData;
             else value[currentIdx] = vlenInfo.vlenData.toString();
             checkComplete();
           });
           offset += 16;
         } else if (dataTypeClass === "REFERENCE") {
-          console.log("READING REFERENCE: " + offset);
           const address = struct.unpack('<Q', buffer, offset)[0]
           value[i] = new Reference(address);
           offset += 8;
           checkComplete();
         } else if (dataTypeClass === "VLEN_SEQUENCE") {
-          console.log("READING VLEN_SEQ: " + offset);
           const baseType = datatype[1]
           dataObj._vlenSizeAndData(buffer, offset, i, (currentIdx, vlenInfo) => {
             dataObj._attrValue(baseType, vlenInfo.vlenData, vlenInfo.vlenSize, 0, (attrValue) => {
@@ -249,7 +243,8 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
       }
 
     } else {
-      callback(struct.unpack(datatype, buffer, offset));
+      // TODO: Struct-unpack doesn't read these buffers right...
+      callback(struct.unpack(datatype, buffer, offset)[0]);
     } 
 
   }
