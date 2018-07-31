@@ -143,7 +143,6 @@ export class GlobalHeap {
   constructor(fileObj: FileObj, offset: number, onReady: Function) {
     // fh.seek(offset)
     // const header = _unpack_struct_from_file(GLOBAL_HEAP_HEADER, fh)
-    console.log(offset + " in the constructor")
     utils.fileChunkReader(fileObj._file, [offset, 
                                           offset + utils.structSize(consts.GLOBAL_HEAP_HEADER) - 1], (e) => {
       const fileBuffer = Buffer.from(e.target.result);

@@ -54,6 +54,7 @@ export default class DatatypeMessage {
 
   _determineFixedPointDatatype(datatypeMsg: Map<string, any>) : string {
     const lengthInBytes: number = datatypeMsg.get("size");
+ 
     if (![1, 2, 4, 8].includes(lengthInBytes))
       throw new Error("Unsupported datatype size");
 
@@ -76,6 +77,7 @@ export default class DatatypeMessage {
 
   _determineFloatingPointDatatype(datatypeMsg: Map<string, any>) : string {
     const lengthInBytes: number = datatypeMsg.get("size");
+
     if (![1, 2, 4, 8].includes(lengthInBytes))
       throw new Error("Unsupported datatype size");
 

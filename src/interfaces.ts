@@ -29,9 +29,14 @@ export interface DataObj {
   getAttributes: Function;
   unpackAttr: Function;
   getLinks: Function;
+  getData: Function;
   determineDataShape: Function;
+  shape: Function;
+  dtype: Function;
   _getSymbolTableLinks: Function;
   _attrValue: Function;
+  _getDataMessageProperties: Function;
+  _getChunkedData: Function;
   _vlenSizeAndData: Function;
 
 }

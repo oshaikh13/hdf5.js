@@ -8,6 +8,8 @@ import { DataObj, BTree as BTreeInterface, Heap, SymbolTable } from './interface
 import FileObj from './highLevel';
 import DatatypeMessage from './DatatypeMessage';
 
+const UNDEFINED_ADDRESS = struct.unpack('<Q', Buffer.from('\xff\xff\xff\xff\xff\xff\xff\xff'))[0]
+
 var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj => {
   
   const dataObj = <DataObj>{};
@@ -115,6 +117,62 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
   }
 
   dataObj.isDataset = () : boolean => dataObj.findMessageTypes(consts.DATASPACE_MSG_TYPE).length > 0;
+
+  dataObj.getData = (args, callback) => {
+    const msg = dataObj.findMessageTypes(consts.DATA_STORAGE_MSG_TYPE)[0];
+    const msgOffset = msg.get('offset_to_message');
+    const { version, dims, layoutClass, propertyOffset } = dataObj._getDataMessageProperties(msgOffset);
+
+    if (layoutClass === 2) callback(dataObj._getChunkedData(msgOffset));
+
+    const dataOffset = struct.unpack('<Q', dataObj.msg_data, propertyOffset)[0];
+
+    if (dataOffset === UNDEFINED_ADDRESS) {
+      callback([]);
+    }
+
+    if (!(dataObj.dtype() instanceof Array)) {
+      debugger;
+    }
+
+  }
+
+  dataObj.shape = () => {
+    const msg = dataObj.findMessageTypes(consts.DATATYPE_MSG_TYPE)[0]
+    const msgOffset = msg.get('offset_to_message');
+    return dataObj.determineDataShape(dataObj.msg_data, msgOffset)
+  }
+
+  dataObj.dtype = () => {
+    const msg = dataObj.findMessageTypes(consts.DATATYPE_MSG_TYPE)[0]
+    const msgOffset = msg.get('offset_to_message');
+    return new DatatypeMessage(dataObj.msg_data, msgOffset).datatype
+  }
+
+  dataObj._getChunkedData = (msgOffset: number) => {
+
+  }
+
+  dataObj._getDataMessageProperties = (msgOffset: number) => {
+    let dims, layoutClass, propertyOffset = null;
+    const [ version, arg1, arg2 ] = struct.unpack('<BBB', dataObj.msg_data, msgOffset);
+    if (version === 1 || version === 2) {
+      dims = arg1;
+      layoutClass = arg2;
+      propertyOffset = msgOffset + struct.sizeOf('<BBB');
+      if (layoutClass === 1) {
+        propertyOffset += struct.sizeOf('<BQ')
+      } else if (layoutClass === 2) {
+        propertyOffset += struct.sizeOf('<BI')
+      }
+    } else if (version === 3 || version === 4) {
+      layoutClass = arg1;
+      propertyOffset = msgOffset;
+      propertyOffset += struct.sizeOf('<BB');
+    }
+
+    return { version, dims, layoutClass, propertyOffset }
+  }
 
   dataObj.getLinks = (callback) => {
     const symTableMessages = dataObj.findMessageTypes(consts.SYMBOL_TABLE_MSG_TYPE)
@@ -246,7 +304,6 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
 
     } else {
       // TODO: Struct-unpack doesn't read these buffers right...
-      debugger;
       callback(struct.unpack(datatype, buffer, offset)[0]);
     } 
 

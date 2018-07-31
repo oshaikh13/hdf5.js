@@ -61,7 +61,6 @@ class Group {
 
     let nextObj, additionalObj;
     if (posix.dirname(path) != '.') {
-      debugger;
       [nextObj, additionalObj] = path.split(/_(.+)/)
     } else {
       additionalObj = ".";
@@ -76,7 +75,7 @@ class Group {
     const dataObjs = DataObjects(this.parent, this._links[nextObj].toInt(), () => {
       if (dataObjs.isDataset()) {
         if (additionalObj != '.') throw new Error(objName + " is a dataset, not a group");
-        debugger;
+        new Dataset(objName, dataObjs, this.parent).get({}, () => {});
       } else {
         const newGroup = new Group();
         newGroup.setupGroup(objName, dataObjs, this.parent, () => {
@@ -103,7 +102,6 @@ class Group {
   attrs (callback) {
     if (this._attrs == null) {
       this._dataObjects.getAttributes((attrs) => {
-        console.log("huh");
         this._attrs = attrs;
         callback(attrs);
       });
@@ -134,6 +132,27 @@ class HDF5File extends Group {
   _getObjectByAddress(objAddress: number) {
     if (this._dataObjects.offset === objAddress) return this;
     return this.visitItems((x, y) => y._dataObjects.offset === objAddress);
+  }
+}
+
+class Dataset {
+  parent: HDF5File;
+  name: string;
+  file: File;
+
+  _dataObjects: DataObj;
+  _attrs: null | object;
+  _astype: null | object;
+
+  constructor(name: string, dataObjects: DataObj, parent: HDF5File) {
+    this.name = name;
+    this._dataObjects = dataObjects;
+    this.parent = parent;
+    this.file = parent._file;
+  }
+
+  get (args, callback) {
+    const data = this._dataObjects.getData();
   }
 }
 
