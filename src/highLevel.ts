@@ -2,6 +2,7 @@ import DataObjects from './DataObjects';
 import lowLevel from './lowLevel';
 import { DataObj, SuperBlock } from './interfaces';
 import { Reference } from './utils';
+import posix from 'path';
 
 class Group {
   parent: HDF5File;
@@ -49,10 +50,43 @@ class Group {
     return obj;
   }
 
-  get(y: any) {
+  get(y: string | Reference, callback) {
     if (y instanceof Reference) {
       this._dereference(y);
     }
+
+    const path : string = posix.normalize(y);
+    if (path === '.') callback(this);
+    if (path.startsWith('/')) this.get(path.slice(1), (value) => { callback(value) });
+
+    let nextObj, additionalObj;
+    if (posix.dirname(path) != '.') {
+      debugger;
+      [nextObj, additionalObj] = path.split(/_(.+)/)
+    } else {
+      additionalObj = ".";
+      nextObj = path;
+    }
+
+    if (!this._links[nextObj]) {
+      throw new Error(nextObj + " not found in group.");
+    }
+
+    const objName = posix.join(this.name, nextObj);
+    const dataObjs = DataObjects(this.parent, this._links[nextObj].toInt(), () => {
+      if (dataObjs.isDataset()) {
+        if (additionalObj != '.') throw new Error(objName + " is a dataset, not a group");
+        debugger;
+      } else {
+        const newGroup = new Group();
+        newGroup.setupGroup(objName, dataObjs, this.parent, () => {
+          newGroup.get(additionalObj, (value) => {
+            callback(value)
+          })
+        });
+      }
+    });
+
   }
 
   visitItems (callback) : object {

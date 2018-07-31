@@ -32,9 +32,7 @@ function onDrop(e) {
   }
 
   F = new HDF5(files[0], () => {
-    F.attrs((attrs) => {
-      console.log(attrs);
-    });
+    F.get("somedata");
   });
 
 };

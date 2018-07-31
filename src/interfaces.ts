@@ -23,6 +23,7 @@ export interface DataObj {
   _gheapLoadedStatus: number;
   _gheapQueue: Array<any>;
 
+  isDataset: Function;
   parseV1Objects: Function;
   findMessageTypes: Function;
   getAttributes: Function;

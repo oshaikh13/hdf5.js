@@ -114,6 +114,8 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     return dataObj.msgs.filter(msg => msg.get("type") === msgType)
   }
 
+  dataObj.isDataset = () : boolean => dataObj.findMessageTypes(consts.DATASPACE_MSG_TYPE).length > 0;
+
   dataObj.getLinks = (callback) => {
     const symTableMessages = dataObj.findMessageTypes(consts.SYMBOL_TABLE_MSG_TYPE)
     if (symTableMessages.length) {
@@ -244,6 +246,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
 
     } else {
       // TODO: Struct-unpack doesn't read these buffers right...
+      debugger;
       callback(struct.unpack(datatype, buffer, offset)[0]);
     } 
 
