@@ -75,7 +75,11 @@ class Group {
     const dataObjs = DataObjects(this.parent, this._links[nextObj].toInt(), () => {
       if (dataObjs.isDataset()) {
         if (additionalObj != '.') throw new Error(objName + " is a dataset, not a group");
-        new Dataset(objName, dataObjs, this.parent).get({}, () => {});
+
+        new Dataset(objName, dataObjs, this.parent).get({}, (wrapperArray) => {
+          callback(wrapperArray);
+        });
+
       } else {
         const newGroup = new Group();
         newGroup.setupGroup(objName, dataObjs, this.parent, () => {
@@ -152,7 +156,9 @@ class Dataset {
   }
 
   get (args, callback) {
-    const data = this._dataObjects.getData();
+    this._dataObjects.getData((wrapperArray) => {
+      callback(wrapperArray);
+    });
   }
 }
 

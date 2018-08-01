@@ -7,6 +7,7 @@ import BTree from './BTree';
 import { DataObj, BTree as BTreeInterface, Heap, SymbolTable } from './interfaces';
 import FileObj from './highLevel';
 import DatatypeMessage from './DatatypeMessage';
+import { MemMappedArray } from './Arrays'
 
 const UNDEFINED_ADDRESS = struct.unpack('<Q', Buffer.from('\xff\xff\xff\xff\xff\xff\xff\xff'))[0]
 
@@ -118,7 +119,7 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
 
   dataObj.isDataset = () : boolean => dataObj.findMessageTypes(consts.DATASPACE_MSG_TYPE).length > 0;
 
-  dataObj.getData = (args, callback) => {
+  dataObj.getData = (callback) => {
     const msg = dataObj.findMessageTypes(consts.DATA_STORAGE_MSG_TYPE)[0];
     const msgOffset = msg.get('offset_to_message');
     const { version, dims, layoutClass, propertyOffset } = dataObj._getDataMessageProperties(msgOffset);
@@ -132,15 +133,17 @@ var DataObjects = (fileObj: FileObj, offset: number, onReadyCallback) : DataObj 
     }
 
     if (!(dataObj.dtype() instanceof Array)) {
-      debugger;
+      const shape = dataObj.shape();
+      const datasetArray = new MemMappedArray(fileObj._file, dataObj.dtype(), dataObj.shape(), dataOffset);
+      callback(datasetArray);
     }
 
   }
 
   dataObj.shape = () => {
-    const msg = dataObj.findMessageTypes(consts.DATATYPE_MSG_TYPE)[0]
+    const msg = dataObj.findMessageTypes(consts.DATASPACE_MSG_TYPE)[0]
     const msgOffset = msg.get('offset_to_message');
-    return dataObj.determineDataShape(dataObj.msg_data, msgOffset)
+    return dataObj.determineDataShape(dataObj.msg_data, msgOffset).map((x) => x.toInt())
   }
 
   dataObj.dtype = () => {
