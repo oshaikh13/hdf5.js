@@ -33,11 +33,10 @@ function onDrop(e) {
 
   F = new HDF5(files[0], () => {
     F.get("somedata", (wrapperArray) => {
-      console.log(wrapperArray);
-      wrapperArray.get(0, 0, (x) => console.log(x));
-      wrapperArray.toArray((array) => {
-        console.log(array)
-      });
+      wrapperArray.toArray((x) => console.log(x));
+      for (var i = 0; i < wrapperArray.shape[0]; i++) {
+        wrapperArray.get(i, (x) => console.log(x));
+      }
     });
   });
 
